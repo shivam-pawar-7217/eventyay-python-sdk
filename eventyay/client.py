@@ -15,8 +15,9 @@ from .exceptions import (
 
 
 from .organizers import OrganizersMixin
+from .events import EventsMixin
 
-class EventyayClient(OrganizersMixin):
+class EventyayClient(OrganizersMixin, EventsMixin):
     """
     Main client for the Eventyay API.
     
