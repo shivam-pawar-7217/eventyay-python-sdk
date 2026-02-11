@@ -1,72 +1,72 @@
-# Eventyay Python SDK
+# Eventyay Python SDK 
 
-A Python client library for the Eventyay API that simplifies interaction with event management endpoints.
+A modern, type-safe Python client for the [Eventyay](https://eventyay.com) Event Management Platform. 
+Simplify API interactions, manage attendees, and automate event workflows with clean, pythonic code.
 
-## Overview
+> **Status**: 🚧 Pre-Alpha (GSoC 2026 Project)
 
-The Eventyay Python SDK provides a cleaner, more Pythonic way to interact with the Eventyay REST API. Instead of making raw HTTP requests, developers can use simple Python functions to manage organizers, events, and more.
+## Features ✨
 
-## Installation
+*   **Organizers**: Fetch and manage organizer profiles.
+*   **Events**: Retrieve events, attendees, speakers, and sessions.
+*   **Robust Error Handling**: Graceful handling of network failures and timeouts.
+*   **Type Hinted**: Fully typed for excellent IDE support.
 
-```bash
-pip install eventyay
-```
+## Installation 📦
 
-Or install from source:
-
+### User Installation
 ```bash
 git clone https://github.com/shivam-pawar-7217/eventyay-python-sdk.git
 cd eventyay-python-sdk
+pip install -r requirements.txt
+```
+
+### Developer Setup (Editable)
+```bash
 pip install -e .
 ```
 
-## Quick Start
+## Quick Start 🚀
+
+### 1. Public Data (No API Key)
 
 ```python
-from eventyay import EventyayClient
+from eventyay.client import EventyayClient
+from eventyay.exceptions import EventyayConnectionError
 
-# Initialize the client
-client = EventyayClient(base_url="https://dev.eventyay.com/api/v1")
+client = EventyayClient()
 
-# With API authentication
-client = EventyayClient(
-    base_url="https://dev.eventyay.com/api/v1",
-    api_key="your-api-key-here"
-)
+try:
+    # Get Public Events
+    events = client.get_events()
+    print(f"Found {len(events)} events!")
 
-# Get organizers
-organizers = client.get_organizers(page=1, page_size=10)
-print(organizers)
+except EventyayConnectionError:
+    print("Please check your internet connection.")
 ```
 
-## Features
+### 2. Organizer Data
 
-- Clean, Pythonic API interface
-- Built-in authentication support
-- Comprehensive error handling
-- Full type hints support
-- Pagination support
-- Well-documented methods
+```python
+# specific organizer
+org = client.get_organizer(organizer_id="123")
+print(f"Organizer: {org['name']}")
+```
 
-## Requirements
+## Running Tests 🧪
 
-- Python 3.7+
-- requests >= 2.28.0
+```bash
+python3 -m unittest discover tests
+```
 
-## Documentation
+## Roadmap 🗺️
 
-For detailed documentation, see the [docs](docs/) directory.
+*   [x] Organizers API
+*   [x] Events API
+*   [x] Error Handling
+*   [ ] Async Support (Coming Soon)
+*   [ ] CLI Tool
 
-## Contributing
+## License 📄
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Links
-
-- **API Documentation**: https://dev.eventyay.com/api/v1
-- **GitHub Repository**: https://github.com/shivam-pawar-7217/eventyay-python-sdk
-- **Issue Tracker**: https://github.com/shivam-pawar-7217/eventyay-python-sdk/issues
+MIT License.
