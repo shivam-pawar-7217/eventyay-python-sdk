@@ -14,7 +14,9 @@ from .exceptions import (
 )
 
 
-class EventyayClient:
+from .organizers import OrganizersMixin
+
+class EventyayClient(OrganizersMixin):
     """
     Main client for the Eventyay API.
     
@@ -137,24 +139,3 @@ class EventyayClient:
             raise EventyayValidationError(error_message)
         else:
             raise EventyayAPIError(f"HTTP {status_code}: {error_message}")
-    
-    def get_organizers(self, page: int = 1, page_size: int = 10) -> Dict[str, Any]:
-        """
-        Get a list of organizers.
-        
-        Args:
-            page: Page number (default: 1)
-            page_size: Number of results per page (default: 10)
-            
-        Returns:
-            Dictionary containing organizers data and pagination info
-            
-        Example:
-            >>> client = EventyayClient()
-            >>> organizers = client.get_organizers(page=1, page_size=20)
-        """
-        params = {
-            'page': page,
-            'page_size': page_size
-        }
-        return self._get('organizers/', params=params)
