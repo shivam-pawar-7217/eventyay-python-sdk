@@ -10,7 +10,9 @@ from .exceptions import (
     EventyayAPIError,
     EventyayAuthenticationError,
     EventyayNotFoundError,
-    EventyayValidationError
+    EventyayValidationError,
+    EventyayConnectionError,
+    EventyayTimeoutError
 )
 
 
@@ -75,7 +77,11 @@ class EventyayClient(OrganizersMixin, EventsMixin):
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as e:
-            self._handle_error(response)
+            self._handle_error(e.response)
+        except requests.exceptions.ConnectionError:
+            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
+        except requests.exceptions.Timeout:
+            raise EventyayTimeoutError("The request to the Eventyay API timed out.")
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
     
@@ -88,7 +94,11 @@ class EventyayClient(OrganizersMixin, EventsMixin):
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as e:
-            self._handle_error(response)
+            self._handle_error(e.response)
+        except requests.exceptions.ConnectionError:
+            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
+        except requests.exceptions.Timeout:
+            raise EventyayTimeoutError("The request to the Eventyay API timed out.")
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
     
@@ -101,7 +111,11 @@ class EventyayClient(OrganizersMixin, EventsMixin):
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as e:
-            self._handle_error(response)
+            self._handle_error(e.response)
+        except requests.exceptions.ConnectionError:
+            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
+        except requests.exceptions.Timeout:
+            raise EventyayTimeoutError("The request to the Eventyay API timed out.")
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
     
@@ -113,7 +127,11 @@ class EventyayClient(OrganizersMixin, EventsMixin):
             response = self.session.delete(url)
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            self._handle_error(response)
+            self._handle_error(e.response)
+        except requests.exceptions.ConnectionError:
+            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
+        except requests.exceptions.Timeout:
+            raise EventyayTimeoutError("The request to the Eventyay API timed out.")
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
     

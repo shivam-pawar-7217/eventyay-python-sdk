@@ -23,3 +23,13 @@ class EventyayNotFoundError(EventyayAPIError):
 class EventyayValidationError(EventyayAPIError):
     """Raised when request validation fails (400 errors)."""
     pass
+
+
+class EventyayConnectionError(EventyayAPIError):
+    """Raised when a network connection error occurs."""
+    pass
+
+
+class EventyayTimeoutError(EventyayAPIError):
+    """Raised when a request times out."""
+    pass
