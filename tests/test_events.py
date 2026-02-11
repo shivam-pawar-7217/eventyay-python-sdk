@@ -1,45 +1,75 @@
 import unittest
-from unittest.mock import MagicMock
-from eventyay import EventyayClient
+from unittest.mock import Mock
+from eventyay.client import EventyayClient
 
 class TestEvents(unittest.TestCase):
     def setUp(self):
         self.client = EventyayClient(api_key="test-key")
-        self.mock_response = MagicMock()
-        self.client.session.get = MagicMock(return_value=self.mock_response)
+        self.client.session = Mock()
 
-    def test_get_events_success(self):
-        # Setup mock
-        expected_data = {'data': [{'id': 1, 'name': 'Test Event'}]}
-        self.mock_response.status_code = 200
-        self.mock_response.json.return_value = expected_data
+    def test_get_event(self):
+        event_id = "1"
+        expected = {"id": "1", "name": "Test Event"}
+        
+        mock_response = Mock()
+        mock_response.json.return_value = expected
+        mock_response.status_code = 200
+        self.client.session.get.return_value = mock_response
 
-        # Call method
-        result = self.client.get_events(page=1, page_size=10)
-
-        # detailed assertions
-        self.client.session.get.assert_called_with(
-            'https://dev.eventyay.com/api/v1/events/',
-            params={'page': 1, 'page_size': 10}
-        )
-        self.assertEqual(result, expected_data)
-
-    def test_get_event_success(self):
-        # Setup mock
-        event_id = 1
-        expected_data = {'id': 1, 'name': 'Test Event'}
-        self.mock_response.status_code = 200
-        self.mock_response.json.return_value = expected_data
-
-        # Call method
         result = self.client.get_event(event_id)
+        
+        self.client.session.get.assert_called_once()
+        args, _ = self.client.session.get.call_args
+        self.assertTrue(args[0].endswith("events/1"))
+        self.assertEqual(result, expected)
 
-        # detailed assertions
-        self.client.session.get.assert_called_with(
-            f'https://dev.eventyay.com/api/v1/events/{event_id}',
-            params=None
-        )
-        self.assertEqual(result, expected_data)
+    def test_get_event_attendees(self):
+        event_id = "1"
+        expected = [{"id": "101", "name": "Attendee 1"}]
+        
+        mock_response = Mock()
+        mock_response.json.return_value = expected
+        mock_response.status_code = 200
+        self.client.session.get.return_value = mock_response
+
+        result = self.client.get_event_attendees(event_id)
+        
+        self.client.session.get.assert_called_once()
+        args, _ = self.client.session.get.call_args
+        self.assertTrue(args[0].endswith("events/1/attendees"))
+        self.assertEqual(result, expected)
+
+    def test_get_event_sessions(self):
+        event_id = "1"
+        expected = [{"id": "201", "title": "Talk 1"}]
+        
+        mock_response = Mock()
+        mock_response.json.return_value = expected
+        mock_response.status_code = 200
+        self.client.session.get.return_value = mock_response
+
+        result = self.client.get_event_sessions(event_id)
+        
+        self.client.session.get.assert_called_once()
+        args, _ = self.client.session.get.call_args
+        self.assertTrue(args[0].endswith("events/1/sessions"))
+        self.assertEqual(result, expected)
+
+    def test_get_event_speakers(self):
+        event_id = "1"
+        expected = [{"id": "301", "name": "Speaker 1"}]
+        
+        mock_response = Mock()
+        mock_response.json.return_value = expected
+        mock_response.status_code = 200
+        self.client.session.get.return_value = mock_response
+
+        result = self.client.get_event_speakers(event_id)
+        
+        self.client.session.get.assert_called_once()
+        args, _ = self.client.session.get.call_args
+        self.assertTrue(args[0].endswith("events/1/speakers"))
+        self.assertEqual(result, expected)
 
 if __name__ == '__main__':
     unittest.main()

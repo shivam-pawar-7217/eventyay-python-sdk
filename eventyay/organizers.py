@@ -30,7 +30,7 @@ class OrganizersMixin:
         Returns:
             Dict containing organizer details.
         """
-        return self.client._get(f"organizers/{organizer_id}")
+        return self._get(f"organizers/{organizer_id}")
 
     def get_organizer_events(self, organizer_id: str) -> list[Dict[str, Any]]:
         """
@@ -42,16 +42,5 @@ class OrganizersMixin:
         Returns:
             List of events.
         """
-        return self.client._get(f"organizers/{organizer_id}/events")
+        return self._get(f"organizers/{organizer_id}/events")
 
-    def get_organizer_events(self, organizer_id: str) -> list[Dict[str, Any]]:
-        """
-        Get all events for a specific organizer.
-
-        Args:
-            organizer_id: The ID of the organizer.
-
-        Returns:
-            List of events.
-        """
-        return self.client._get(f"organizers/{organizer_id}/events")
