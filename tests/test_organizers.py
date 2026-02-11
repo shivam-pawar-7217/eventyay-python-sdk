@@ -1,46 +1,38 @@
 import unittest
-from unittest.mock import MagicMock, patch
-from eventyay import EventyayClient
-from eventyay.exceptions import EventyayAPIError
+from unittest.mock import Mock, MagicMock
+from eventyay.client import EventyayClient
+from eventyay.organizers import Organizers
 
 class TestOrganizers(unittest.TestCase):
     def setUp(self):
-        self.client = EventyayClient(api_key="test-key")
-        self.mock_response = MagicMock()
-        self.client.session.get = MagicMock(return_value=self.mock_response)
+        self.mock_client = Mock(spec=EventyayClient)
+        self.organizers = Organizers(self.mock_client)
 
-    def test_get_organizers_success(self):
-        # Setup mock
-        expected_data = {'data': [{'id': 1, 'name': 'Test Organizer'}]}
-        self.mock_response.status_code = 200
-        self.mock_response.json.return_value = expected_data
+    def test_get_organizer(self):
+        # Arrange
+        organizer_id = "1"
+        expected_response = {"id": "1", "name": "Test Organizer"}
+        self.mock_client._get.return_value = expected_response
 
-        # Call method
-        result = self.client.get_organizers(page=1, page_size=10)
+        # Act
+        result = self.organizers.get_organizer(organizer_id)
 
-        # detailed assertions
-        self.client.session.get.assert_called_with(
-            'https://dev.eventyay.com/api/v1/organizers/',
-            params={'page': 1, 'page_size': 10}
-        )
-        self.assertEqual(result, expected_data)
+        # Assert
+        self.mock_client._get.assert_called_once_with("organizers/1")
+        self.assertEqual(result, expected_response)
 
-    def test_get_organizer_success(self):
-        # Setup mock
-        organizer_id = 1
-        expected_data = {'id': 1, 'name': 'Test Organizer'}
-        self.mock_response.status_code = 200
-        self.mock_response.json.return_value = expected_data
+    def test_get_organizer_events(self):
+        # Arrange
+        organizer_id = "1"
+        expected_response = [{"id": "101", "name": "Event 1"}, {"id": "102", "name": "Event 2"}]
+        self.mock_client._get.return_value = expected_response
 
-        # Call method
-        result = self.client.get_organizer(organizer_id)
+        # Act
+        result = self.organizers.get_organizer_events(organizer_id)
 
-        # detailed assertions
-        self.client.session.get.assert_called_with(
-            f'https://dev.eventyay.com/api/v1/organizers/{organizer_id}',
-            params=None
-        )
-        self.assertEqual(result, expected_data)
+        # Assert
+        self.mock_client._get.assert_called_once_with("organizers/1/events")
+        self.assertEqual(result, expected_response)
 
 if __name__ == '__main__':
     unittest.main()

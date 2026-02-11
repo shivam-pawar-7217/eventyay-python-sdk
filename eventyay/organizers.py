@@ -20,14 +20,38 @@ class OrganizersMixin:
         }
         return self._get('organizers/', params=params)
 
-    def get_organizer(self, organizer_id: int) -> Dict[str, Any]:
+    def get_organizer(self, organizer_id: str) -> Dict[str, Any]:
         """
-        Get a single organizer by ID.
-        
+        Get details of a specific organizer.
+
         Args:
-            organizer_id: The ID of the organizer to retrieve
-            
+            organizer_id: The ID of the organizer.
+
         Returns:
-            Dictionary containing organizer details
+            Dict containing organizer details.
         """
-        return self._get(f'organizers/{organizer_id}')
+        return self.client._get(f"organizers/{organizer_id}")
+
+    def get_organizer_events(self, organizer_id: str) -> list[Dict[str, Any]]:
+        """
+        Get all events for a specific organizer.
+
+        Args:
+            organizer_id: The ID of the organizer.
+
+        Returns:
+            List of events.
+        """
+        return self.client._get(f"organizers/{organizer_id}/events")
+
+    def get_organizer_events(self, organizer_id: str) -> list[Dict[str, Any]]:
+        """
+        Get all events for a specific organizer.
+
+        Args:
+            organizer_id: The ID of the organizer.
+
+        Returns:
+            List of events.
+        """
+        return self.client._get(f"organizers/{organizer_id}/events")
