@@ -24,5 +24,22 @@ class TestEvents(unittest.TestCase):
         )
         self.assertEqual(result, expected_data)
 
+    def test_get_event_success(self):
+        # Setup mock
+        event_id = 1
+        expected_data = {'id': 1, 'name': 'Test Event'}
+        self.mock_response.status_code = 200
+        self.mock_response.json.return_value = expected_data
+
+        # Call method
+        result = self.client.get_event(event_id)
+
+        # detailed assertions
+        self.client.session.get.assert_called_with(
+            f'https://dev.eventyay.com/api/v1/events/{event_id}',
+            params=None
+        )
+        self.assertEqual(result, expected_data)
+
 if __name__ == '__main__':
     unittest.main()

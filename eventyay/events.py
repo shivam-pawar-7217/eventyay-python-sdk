@@ -19,3 +19,15 @@ class EventsMixin:
             'page_size': page_size
         }
         return self._get('events/', params=params)
+
+    def get_event(self, event_id: int) -> Dict[str, Any]:
+        """
+        Get a single event by ID.
+        
+        Args:
+            event_id: The ID of the event to retrieve
+            
+        Returns:
+            Dictionary containing event details
+        """
+        return self._get(f'events/{event_id}')
