@@ -7,7 +7,9 @@ from .exceptions import (
     EventyayTimeoutError
 )
 
-class AsyncEventyayClient:
+from .async_mixins import AsyncOrganizersMixin, AsyncEventsMixin
+
+class AsyncEventyayClient(AsyncOrganizersMixin, AsyncEventsMixin):
     """
     Asynchronous client for the Eventyay API.
     Uses aiohttp for non-blocking I/O.
