@@ -53,7 +53,26 @@ org = client.get_organizer(organizer_id="123")
 print(f"Organizer: {org['name']}")
 ```
 
-## Running Tests 🧪
+
+## ⚡ Async Usage (New!)
+
+For high-performance applications, use the `AsyncEventyayClient`:
+
+```python
+import asyncio
+from eventyay.async_client import AsyncEventyayClient
+
+async def main():
+    async with AsyncEventyayClient() as client:
+        # Fetch events efficiently
+        events = await client.get_events()
+        print(f"Fetched {len(events)} events")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## 🧪 Running Tests
 
 ```bash
 python3 -m unittest discover tests
