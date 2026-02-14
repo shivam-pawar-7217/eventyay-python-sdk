@@ -26,6 +26,8 @@ class AsyncEventsMixin:
     async def get_events(self) -> List[Dict[str, Any]]:
         """
         Fetch all public events (Async).
+        
+        Returns:
+            List of event dictionaries.
         """
-        # Implementation to follow
-        pass
+        return await self._get("events")
