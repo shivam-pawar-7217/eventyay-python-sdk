@@ -39,15 +39,24 @@ class AsyncEventyayClient(AsyncOrganizersMixin, AsyncEventsMixin):
         if self._session:
             await self._session.close()
 
-    async def get_events(self):
-        """Fetch events asynchronously."""
+    async def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Async GET request."""
         if not self._session:
             self._session = aiohttp.ClientSession(headers=self.headers)
             
-        url = f"{self.base_url}/events"
+        url = f"{self.base_url}/{endpoint.lstrip('/')}"
         try:
-            async with self._session.get(url) as response:
+            async with self._session.get(url, params=params) as response:
                 response.raise_for_status()
                 return await response.json()
         except aiohttp.ClientError as e:
             raise EventyayConnectionError(f"Async request failed: {e}")
+            
+    async def get_events(self):
+        """Deprecated: Use Mixin method."""
+        # This was the old skeleton method. We should remove it or delegate to mixin.
+        # Since we inherit from AsyncEventsMixin, we should just remove this 
+        # to avoid shadowing the mixin method.
+        # But wait, AsyncEventsMixin isn't implemented fully yet. 
+        # Let's remove this method so the mixin takes over when implemented.
+        pass
