@@ -60,13 +60,24 @@ For high-performance applications, use the `AsyncEventyayClient`:
 
 ```python
 import asyncio
-from eventyay.async_client import AsyncEventyayClient
+from eventyay import AsyncEventyayClient
 
 async def main():
     async with AsyncEventyayClient() as client:
-        # Fetch events efficiently
+        # Fetch events
         events = await client.get_events()
-        print(f"Fetched {len(events)} events")
+        print(f"Found {len(events)} events")
+
+        # Fetch event details, attendees, speakers, sessions
+        event = await client.get_event(100)
+        attendees = await client.get_event_attendees("100")
+        speakers = await client.get_event_speakers("100")
+        sessions = await client.get_event_sessions("100")
+
+        print(f"Event: {event['name']}")
+        print(f"Attendees: {len(attendees)}")
+        print(f"Speakers: {len(speakers)}")
+        print(f"Sessions: {len(sessions)}")
 
 if __name__ == "__main__":
     asyncio.run(main())
