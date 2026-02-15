@@ -9,6 +9,7 @@ __author__ = "Shivam Pawar"
 __email__ = "shivam.pawar.7217@example.com"
 
 from .client import EventyayClient
+from .async_client import AsyncEventyayClient
 from .exceptions import (
     EventyayAPIError,
     EventyayAuthenticationError,
@@ -18,6 +19,7 @@ from .exceptions import (
 
 __all__ = [
     "EventyayClient",
+    "AsyncEventyayClient",
     "EventyayAPIError",
     "EventyayAuthenticationError",
     "EventyayNotFoundError",
