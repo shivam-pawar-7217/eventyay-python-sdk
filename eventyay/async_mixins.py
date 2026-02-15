@@ -10,15 +10,19 @@ class AsyncOrganizersMixin:
         Returns:
             List of organizer dictionaries.
         """
-        # We assume 'self' has a _get method or similar from the client
-        # But wait, AsyncClient doesn't have _get yet?
-        # AsyncClient uses direct aiohttp session calls in implementation.
-        # We should probably add a helper _get method to AsyncClient or mixin.
-        # For now, let's access self._session directly if we can, OR best practice:
-        # Add `_get` to AsyncClient and use `await self._get(...)`.
-        
-        # Let's assume we will add `_get` to AsyncClient.
         return await self._get("organizers")
+
+    async def get_organizer(self, organizer_id: str) -> Dict[str, Any]:
+        """
+        Get details of a specific organizer (Async).
+
+        Args:
+            organizer_id: The ID of the organizer.
+
+        Returns:
+            Dict containing organizer details.
+        """
+        return await self._get(f"organizers/{organizer_id}")
 
 class AsyncEventsMixin:
     """Async methods for Events."""
@@ -31,3 +35,51 @@ class AsyncEventsMixin:
             List of event dictionaries.
         """
         return await self._get("events")
+
+    async def get_event(self, event_id: int) -> Dict[str, Any]:
+        """
+        Get a single event by ID (Async).
+
+        Args:
+            event_id: The ID of the event to retrieve.
+
+        Returns:
+            Dictionary containing event details.
+        """
+        return await self._get(f"events/{event_id}")
+
+    async def get_event_attendees(self, event_id: str) -> List[Dict[str, Any]]:
+        """
+        Get all attendees for a specific event (Async).
+
+        Args:
+            event_id: The ID of the event.
+
+        Returns:
+            List of attendee dictionaries.
+        """
+        return await self._get(f"events/{event_id}/attendees")
+
+    async def get_event_speakers(self, event_id: str) -> List[Dict[str, Any]]:
+        """
+        Get all speakers for a specific event (Async).
+
+        Args:
+            event_id: The ID of the event.
+
+        Returns:
+            List of speaker dictionaries.
+        """
+        return await self._get(f"events/{event_id}/speakers")
+
+    async def get_event_sessions(self, event_id: str) -> List[Dict[str, Any]]:
+        """
+        Get all sessions (talks) for a specific event (Async).
+
+        Args:
+            event_id: The ID of the event.
+
+        Returns:
+            List of session dictionaries.
+        """
+        return await self._get(f"events/{event_id}/sessions")
