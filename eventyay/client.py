@@ -23,16 +23,11 @@ class EventyayClient(OrganizersMixin, EventsMixin):
     """
     Main client for the Eventyay API.
     
-    Args:
-        base_url: The base URL for the Eventyay API (default: https://dev.eventyay.com/api/v1)
-        api_key: Optional API key for authentication
+    Client for the Eventyay API.
     
-    Example:
-        >>> client = EventyayClient()
-        >>> organizers = client.get_organizers()
-        
-        With authentication:
-        >>> client = EventyayClient(api_key="your-api-key")
+    Attributes:
+        base_url: The base URL of the API.
+        api_key: The API key for authentication.
     """
     
     def __init__(
@@ -43,6 +38,17 @@ class EventyayClient(OrganizersMixin, EventsMixin):
         self.base_url = base_url.rstrip('/')
         self.api_key = api_key
         self.session = requests.Session()
+        
+        # Configure Retries (Reliability)
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1, # 1s, 2s, 4s
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "OPTIONS"]
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
         
         # Set up authentication header if API key is provided
         if api_key:
@@ -152,9 +158,13 @@ class EventyayClient(OrganizersMixin, EventsMixin):
         
         if status_code == 401 or status_code == 403:
             raise EventyayAuthenticationError(error_message)
-        elif status_code == 404:
+        if status_code == 404:
             raise EventyayNotFoundError(error_message)
-        elif status_code == 400:
+            
+        if status_code == 429:
+            raise EventyayRateLimitError(f"Rate limit exceeded. Try again later. {error_message}")
+            
+        if 400 <= status_code < 500:
             raise EventyayValidationError(error_message)
         else:
             raise EventyayAPIError(f"HTTP {status_code}: {error_message}")
