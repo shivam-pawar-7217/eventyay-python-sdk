@@ -1,4 +1,5 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+from .utils import parse_pagination_params
 
 class OrganizersMixin:
     """Mixin for Organizer-related API methods."""
@@ -19,6 +20,44 @@ class OrganizersMixin:
             'page_size': page_size
         }
         return self._get('organizers/', params=params)
+
+    def get_all_organizers(self) -> List[Dict[str, Any]]:
+        """
+        Fetch ALL organizers by automatically iterating through pages.
+        WARNING: This can take a long time for large datasets.
+        
+        Returns:
+            Complete list of all organizer dictionaries.
+        """
+        all_organizers = []
+        page = 1
+        while True:
+            response = self.get_organizers(page=page, page_size=50) # Maximize page size
+            data = response.get('data', [])
+            if not data:
+                break
+            
+            all_organizers.extend(data)
+            
+            # Check for next page
+            links = response.get('links', {})
+            next_url = links.get('next')
+            if not next_url:
+                break
+                
+            # Parse next page number
+            params = parse_pagination_params(next_url)
+            # The key might be 'page' or 'page[number]'
+            next_page = params.get('page') or params.get('page[number]')
+            if next_page:
+                page = int(next_page)
+            else:
+                # Fallback: just increment if no next link parsing but data exists?
+                # Actually if next_url exists but parsing fails, we might be stuck.
+                # Safe fallback: increment page
+                page += 1
+                
+        return all_organizers
 
     def get_organizer(self, organizer_id: str) -> Dict[str, Any]:
         """
