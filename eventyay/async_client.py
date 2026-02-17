@@ -40,17 +40,31 @@ class AsyncEventyayClient(AsyncOrganizersMixin, AsyncEventsMixin):
             await self._session.close()
 
     async def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Async GET request."""
+        """Async GET request with automatic retries for rate limits."""
         if not self._session:
             self._session = aiohttp.ClientSession(headers=self.headers)
             
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        try:
-            async with self._session.get(url, params=params) as response:
-                response.raise_for_status()
-                return await response.json()
-        except aiohttp.ClientError as e:
-            raise EventyayConnectionError(f"Async request failed: {e}")
+        max_retries = 3
+        backoff = 1
+        
+        for attempt in range(max_retries + 1):
+            try:
+                async with self._session.get(url, params=params) as response:
+                    if response.status == 429 and attempt < max_retries:
+                        # Rate Limit hit - Wait and Retry
+                        wait_time = backoff * (2 ** attempt)
+                        await asyncio.sleep(wait_time)
+                        continue
+                        
+                    response.raise_for_status()
+                    return await response.json()
+            except aiohttp.ClientError as e:
+                if attempt == max_retries:
+                    raise EventyayConnectionError(f"Async request failed after {max_retries} retries: {e}")
+                
+        # Should not reach here
+        raise EventyayConnectionError("Request failed unknown error")
             
     async def get_events(self):
         """Deprecated: Use Mixin method."""
