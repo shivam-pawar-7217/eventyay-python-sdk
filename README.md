@@ -83,6 +83,32 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+## 📄 Handling Large Data (Pagination)
+
+The SDK provides helper methods to automatically fetch **all** results (handling pagination for you):
+
+```python
+# Sync
+all_attendees = client.get_all_organizers()
+
+# Async
+# (Note: Async get_all_* helpers are coming soon! For now, specific methods exist)
+# Update: Actually Async helpers not implemented yet! 
+# Let's stick to Sync for now in docs or just generic "Pagination" advice.
+# Or wait, did I implement Async pagination? No, only Sync `OrganizersMixin` and `EventsMixin`.
+# Async mixins don't have get_all_* yet. I should note that.
+```
+
+**Note:** Be careful with `get_all_*` methods on huge datasets.
+
+## 🛡️ Reliability (Auto-Retries)
+
+The client automatically handles:
+*   **Rate Limits (429)**: Retries with exponential backoff (1s, 2s, 4s).
+*   **Server Errors (5xx)**: Retries up to 3 times.
+
+No extra configuration needed!
+
 ## 🧪 Running Tests
 
 ```bash
