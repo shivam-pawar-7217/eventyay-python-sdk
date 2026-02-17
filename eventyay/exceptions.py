@@ -33,3 +33,7 @@ class EventyayConnectionError(EventyayAPIError):
 class EventyayTimeoutError(EventyayAPIError):
     """Raised when a request times out."""
     pass
+
+class EventyayRateLimitError(EventyayAPIError):
+    """Raised when the API rate limit is exceeded (HTTP 429)."""
+    pass
