@@ -6,13 +6,16 @@ Main client class for interacting with the Eventyay REST API.
 
 import requests
 from typing import Optional, Dict, Any
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 from .exceptions import (
     EventyayAPIError,
     EventyayAuthenticationError,
     EventyayNotFoundError,
     EventyayValidationError,
     EventyayConnectionError,
-    EventyayTimeoutError
+    EventyayTimeoutError,
+    EventyayRateLimitError
 )
 
 
