@@ -68,5 +68,55 @@ def show_event(event_id: int):
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
 
+organizers_app = typer.Typer(help="Manage organizers")
+app.add_typer(organizers_app, name="organizers")
+
+@organizers_app.command("list")
+def list_organizers():
+    """List all organizers."""
+    try:
+        with console.status("[bold green]Fetching organizers..."):
+            organizers_list = client.get_organizers()
+            organizers = organizers_list.data
+            
+        table = Table(title="Eventyay Organizers")
+        table.add_column("ID", style="cyan", no_wrap=True)
+        table.add_column("Name", style="magenta")
+        table.add_column("Description", style="white")
+
+        for org in organizers:
+            desc = org.description or ""
+            # Truncate description if too long
+            if len(desc) > 50:
+                desc = desc[:47] + "..."
+                
+            table.add_row(
+                str(org.id), 
+                org.name, 
+                desc
+            )
+
+        console.print(table)
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+
+@organizers_app.command("show")
+def show_organizer(organizer_id: str):
+    """Show detailed info for an organizer."""
+    try:
+        with console.status(f"[bold green]Fetching organizer {organizer_id}..."):
+            org = client.get_organizer(organizer_id)
+            
+        content = f"""
+[bold]ID:[/bold] {org.id}
+[bold]Name:[/bold] {org.name}
+[bold]Description:[/bold] {org.description or 'N/A'}
+[bold]URL:[/bold] {org.url or 'N/A'}
+        """
+        console.print(Panel(content, title=f"Organizer: {org.name}", expand=False))
+            
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+
 if __name__ == "__main__":
     app()
