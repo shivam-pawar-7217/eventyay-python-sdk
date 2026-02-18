@@ -1,128 +1,109 @@
-# Eventyay Python SDK 🐍
+# Eventyay Python SDK
 
-A modern, type-safe Python client for the [Eventyay](https://eventyay.com) Event Management Platform. 
-Simplify API interactions, manage attendees, and automate event workflows with clean, pythonic code.
+A modern, type-safe, asynchronous Python client for the [Eventyay API](https://api.eventyay.com/).
 
-> **Status**: 🚧 Pre-Alpha (GSoC 2026 Project)
+## 🌟 Features
 
-## Features ✨
+*   **Async & Sync**: Full support for both synchronous and asynchronous applications.
+*   **Type Safety**: Returns Pydantic models for excellent IDE support and validation.
+*   **Auto-Pagination**: Helper methods to fetch *all* results automatically.
+*   **Reliability**: Built-in exponential backoff for rate limits and server errors.
+*   **CLI Tool**: Includes a powerful command-line interface (`eventyay`).
 
-*   **Organizers**: Fetch and manage organizer profiles.
-*   **Events**: Retrieve events, attendees, speakers, and sessions.
-*   **Robust Error Handling**: Graceful handling of network failures and timeouts.
-*   **Type Hinted**: Fully typed for excellent IDE support.
+## 📦 Installation
 
-## Installation 📦
-
-### User Installation
 ```bash
-git clone https://github.com/shivam-pawar-7217/eventyay-python-sdk.git
-cd eventyay-python-sdk
-pip install -r requirements.txt
+pip install eventyay
 ```
 
-### Developer Setup (Editable)
+## 🖥️ CLI Usage
+
+The SDK comes with a command-line tool `eventyay` to manage resources directly from your terminal.
+
 ```bash
-pip install -e .
+# Check version
+eventyay version
+
+# List all events (Rich Table)
+eventyay events list
+
+# Show detailed event info (Rich Panel)
+eventyay events show <id>
+
+# List all organizers
+eventyay organizers list
+
+# Show organizer details
+eventyay organizers show <id>
 ```
 
-## Quick Start 🚀
+## 🚀 Quick Start (Python)
 
-### 1. Public Data (No API Key)
+### Synchronous Usage
 
 ```python
 from eventyay.client import EventyayClient
-from eventyay.exceptions import EventyayConnectionError
 
-client = EventyayClient()
+client = EventyayClient(api_key="YOUR_API_KEY")
 
-try:
-    # Get Public Events
-    events = client.get_events()
-    print(f"Found {len(events)} events!")
-
-except EventyayConnectionError:
-    print("Please check your internet connection.")
+# Fetch all events (Auto-paginated!)
+events = client.get_all_events()
+for event in events:
+    print(f"{event.name} starts at {event.starts_at}")
 ```
 
-### 2. Organizer Data
-
-```python
-# specific organizer
-org = client.get_organizer(organizer_id="123")
-print(f"Organizer: {org['name']}")
-```
-
-
-## ⚡ Async Usage (New!)
-
-For high-performance applications, use the `AsyncEventyayClient`:
+### Asynchronous Usage
 
 ```python
 import asyncio
-from eventyay import AsyncEventyayClient
+from eventyay.async_client import AsyncEventyayClient
 
 async def main():
-    async with AsyncEventyayClient() as client:
-        # Fetch events
-        events = await client.get_events()
-        print(f"Found {len(events)} events")
+    client = AsyncEventyayClient(api_key="YOUR_API_KEY")
+    
+    # Fetch data asynchronously
+    events = await client.get_all_events()
+    print(f"Fetched {len(events)} events")
 
-        # Fetch event details, attendees, speakers, sessions
-        event = await client.get_event(100)
-        attendees = await client.get_event_attendees("100")
-        speakers = await client.get_event_speakers("100")
-        sessions = await client.get_event_sessions("100")
-
-        print(f"Event: {event['name']}")
-        print(f"Attendees: {len(attendees)}")
-        print(f"Speakers: {len(speakers)}")
-        print(f"Sessions: {len(sessions)}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
 ```
 
-## 📄 Handling Large Data (Pagination)
+### Handling Large Data (Pagination)
 
-The SDK provides helper methods to automatically fetch **all** results (handling pagination for you):
+The SDK provides helper methods to automatically fetch **all** results from paginated endpoints.
+These methods return a list of Pydantic objects (`Organizer`, `Event`).
 
 ```python
-# Sync
-all_attendees = client.get_all_organizers()
+# Fetch ALL organizers (returns List[Organizer])
+all_organizers = client.get_all_organizers()
+for org in all_organizers:
+    print(org.name) # Type-safe access!
 
-# Async
-# (Note: Async get_all_* helpers are coming soon! For now, specific methods exist)
-# Update: Actually Async helpers not implemented yet! 
-# Let's stick to Sync for now in docs or just generic "Pagination" advice.
-# Or wait, did I implement Async pagination? No, only Sync `OrganizersMixin` and `EventsMixin`.
-# Async mixins don't have get_all_* yet. I should note that.
+# Fetch ALL events (returns List[Event])
+all_events = client.get_all_events()
+print(f"Total events fetched: {len(all_events)}")
 ```
 
-**Note:** Be careful with `get_all_*` methods on huge datasets.
+### Reliability (Auto-Retries)
 
-## 🛡️ Reliability (Auto-Retries)
+The client automatically retries requests that fail due to:
+*   Rate Limits (HTTP 429)
+*   Server Errors (HTTP 500, 502, 503, 504)
 
-The client automatically handles:
-*   **Rate Limits (429)**: Retries with exponential backoff (1s, 2s, 4s).
-*   **Server Errors (5xx)**: Retries up to 3 times.
+It uses exponential backoff to be a good API citizen.
 
-No extra configuration needed!
+## 🛡️ Type Safety (Pydantic Models)
 
-## 🧪 Running Tests
+The SDK now returns typed objects instead of raw dictionaries. This enables autocomplete and validation in your IDE.
 
-```bash
-python3 -m unittest discover tests
+```python
+event = client.get_event(1)
+# Before: print(event['name'])
+# Now:
+print(event.name)
+print(event.starts_at)
 ```
 
-## Roadmap 🗺️
+## 🤝 Contributing
 
-*   [x] Organizers API
-*   [x] Events API
-*   [x] Error Handling
-*   [ ] Async Support (Coming Soon)
-*   [ ] CLI Tool
-
-## License 📄
-
-MIT License.
+Contributions are welcome! Please feel free to submit a Pull Request.
