@@ -48,4 +48,9 @@ setup(
     keywords="eventyay api sdk client event management",
     include_package_data=True,
     zip_safe=False,
+    entry_points={
+        "console_scripts": [
+            "eventyay=eventyay.cli:app",
+        ],
+    },
 )
