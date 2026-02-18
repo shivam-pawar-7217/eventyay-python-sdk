@@ -62,3 +62,34 @@ class Session(BaseModel):
     starts_at: Optional[str] = None
     ends_at: Optional[str] = None
     model_config = ConfigDict(extra='ignore')
+
+# Response Wrappers for Pagination
+class OrganizerList(BaseModel):
+    data: List[Organizer]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra='ignore')
+
+class EventList(BaseModel):
+    data: List[Event]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra='ignore')
+
+class AttendeeList(BaseModel):
+    data: List[Attendee]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra='ignore')
+
+class SpeakerList(BaseModel):
+    data: List[Speaker]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra='ignore')
+
+class SessionList(BaseModel):
+    data: List[Session]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra='ignore')
