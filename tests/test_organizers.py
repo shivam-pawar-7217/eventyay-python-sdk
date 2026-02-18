@@ -11,7 +11,7 @@ class TestOrganizers(unittest.TestCase):
     def test_get_organizer(self):
         # Arrange
         organizer_id = "1"
-        expected_response = {"id": "1", "name": "Test Organizer"}
+        expected_response = {"id": 1, "name": "Test Organizer"}
         
         # Mock the response object
         mock_response = Mock()
@@ -27,12 +27,14 @@ class TestOrganizers(unittest.TestCase):
         self.client.session.get.assert_called_once()
         args, kwargs = self.client.session.get.call_args
         self.assertTrue(args[0].endswith("organizers/1"))
-        self.assertEqual(result, expected_response)
+        self.assertEqual(result.id, expected_response['id'])
+        self.assertEqual(result.name, expected_response['name'])
 
     def test_get_organizer_events(self):
         # Arrange
         organizer_id = "1"
-        expected_response = [{"id": "101", "name": "Event 1"}, {"id": "102", "name": "Event 2"}]
+        # API now returns {data: [...]} for pagination wrappers
+        expected_response = {"data": [{"id": 101, "name": "Event 1", "identifier": "event1"}, {"id": 102, "name": "Event 2", "identifier": "event2"}]}
         
         # Mock the response object
         mock_response = Mock()
@@ -48,7 +50,8 @@ class TestOrganizers(unittest.TestCase):
         self.client.session.get.assert_called_once()
         args, kwargs = self.client.session.get.call_args
         self.assertTrue(args[0].endswith("organizers/1/events"))
-        self.assertEqual(result, expected_response)
+        self.assertEqual(len(result.data), 2)
+        self.assertEqual(result.data[0].id, expected_response['data'][0]['id'])
 
 if __name__ == '__main__':
     unittest.main()

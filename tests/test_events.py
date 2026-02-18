@@ -9,7 +9,7 @@ class TestEvents(unittest.TestCase):
 
     def test_get_event(self):
         event_id = "1"
-        expected = {"id": "1", "name": "Test Event"}
+        expected = {"id": 1, "name": "Test Event", "identifier": "test-event"}
         
         mock_response = Mock()
         mock_response.json.return_value = expected
@@ -21,11 +21,12 @@ class TestEvents(unittest.TestCase):
         self.client.session.get.assert_called_once()
         args, _ = self.client.session.get.call_args
         self.assertTrue(args[0].endswith("events/1"))
-        self.assertEqual(result, expected)
+        self.assertEqual(result.id, expected['id'])
+        self.assertEqual(result.name, expected['name'])
 
     def test_get_event_attendees(self):
         event_id = "1"
-        expected = [{"id": "101", "name": "Attendee 1"}]
+        expected = {"data": [{"id": 101, "firstname": "Attendee 1"}]}
         
         mock_response = Mock()
         mock_response.json.return_value = expected
@@ -37,11 +38,12 @@ class TestEvents(unittest.TestCase):
         self.client.session.get.assert_called_once()
         args, _ = self.client.session.get.call_args
         self.assertTrue(args[0].endswith("events/1/attendees"))
-        self.assertEqual(result, expected)
+        self.assertEqual(len(result.data), 1)
+        self.assertEqual(result.data[0].id, expected['data'][0]['id'])
 
     def test_get_event_sessions(self):
         event_id = "1"
-        expected = [{"id": "201", "title": "Talk 1"}]
+        expected = {"data": [{"id": 201, "title": "Talk 1"}]}
         
         mock_response = Mock()
         mock_response.json.return_value = expected
@@ -53,11 +55,12 @@ class TestEvents(unittest.TestCase):
         self.client.session.get.assert_called_once()
         args, _ = self.client.session.get.call_args
         self.assertTrue(args[0].endswith("events/1/sessions"))
-        self.assertEqual(result, expected)
+        self.assertEqual(len(result.data), 1)
+        self.assertEqual(result.data[0].id, expected['data'][0]['id'])
 
     def test_get_event_speakers(self):
         event_id = "1"
-        expected = [{"id": "301", "name": "Speaker 1"}]
+        expected = {"data": [{"id": 301, "name": "Speaker 1"}]}
         
         mock_response = Mock()
         mock_response.json.return_value = expected
@@ -69,7 +72,8 @@ class TestEvents(unittest.TestCase):
         self.client.session.get.assert_called_once()
         args, _ = self.client.session.get.call_args
         self.assertTrue(args[0].endswith("events/1/speakers"))
-        self.assertEqual(result, expected)
+        self.assertEqual(len(result.data), 1)
+        self.assertEqual(result.data[0].id, expected['data'][0]['id'])
 
 if __name__ == '__main__':
     unittest.main()
