@@ -1,18 +1,20 @@
 from typing import List, Dict, Any, Optional
+from .models import Organizer, OrganizerList
 
 class AsyncOrganizersMixin:
     """Async methods for Organizers."""
     
-    async def get_organizers(self) -> List[Dict[str, Any]]:
+    async def get_organizers(self) -> OrganizerList:
         """
         Fetch all organizers (Async).
         
         Returns:
-            List of organizer dictionaries.
+            OrganizerList object.
         """
-        return await self._get("organizers")
+        response_data = await self._get("organizers")
+        return OrganizerList(**response_data)
 
-    async def get_organizer(self, organizer_id: str) -> Dict[str, Any]:
+    async def get_organizer(self, organizer_id: str) -> Organizer:
         """
         Get details of a specific organizer (Async).
 
@@ -20,9 +22,10 @@ class AsyncOrganizersMixin:
             organizer_id: The ID of the organizer.
 
         Returns:
-            Dict containing organizer details.
+            Organizer object.
         """
-        return await self._get(f"organizers/{organizer_id}")
+        response_data = await self._get(f"organizers/{organizer_id}")
+        return Organizer(**response_data)
 
 class AsyncEventsMixin:
     """Async methods for Events."""
