@@ -1,5 +1,8 @@
 from typing import List, Dict, Any, Optional
-from .models import Organizer, OrganizerList
+from .models import (
+    Organizer, OrganizerList,
+    Event, EventList, AttendeeList, SpeakerList, SessionList
+)
 
 class AsyncOrganizersMixin:
     """Async methods for Organizers."""
@@ -30,16 +33,17 @@ class AsyncOrganizersMixin:
 class AsyncEventsMixin:
     """Async methods for Events."""
     
-    async def get_events(self) -> List[Dict[str, Any]]:
+    async def get_events(self) -> EventList:
         """
         Fetch all public events (Async).
         
         Returns:
-            List of event dictionaries.
+            EventList object.
         """
-        return await self._get("events")
+        response_data = await self._get("events")
+        return EventList(**response_data)
 
-    async def get_event(self, event_id: int) -> Dict[str, Any]:
+    async def get_event(self, event_id: int) -> Event:
         """
         Get a single event by ID (Async).
 
@@ -47,11 +51,12 @@ class AsyncEventsMixin:
             event_id: The ID of the event to retrieve.
 
         Returns:
-            Dictionary containing event details.
+            Event object.
         """
-        return await self._get(f"events/{event_id}")
+        response_data = await self._get(f"events/{event_id}")
+        return Event(**response_data)
 
-    async def get_event_attendees(self, event_id: str) -> List[Dict[str, Any]]:
+    async def get_event_attendees(self, event_id: str) -> AttendeeList:
         """
         Get all attendees for a specific event (Async).
 
@@ -59,11 +64,12 @@ class AsyncEventsMixin:
             event_id: The ID of the event.
 
         Returns:
-            List of attendee dictionaries.
+            AttendeeList object.
         """
-        return await self._get(f"events/{event_id}/attendees")
+        response_data = await self._get(f"events/{event_id}/attendees")
+        return AttendeeList(**response_data)
 
-    async def get_event_speakers(self, event_id: str) -> List[Dict[str, Any]]:
+    async def get_event_speakers(self, event_id: str) -> SpeakerList:
         """
         Get all speakers for a specific event (Async).
 
@@ -71,11 +77,12 @@ class AsyncEventsMixin:
             event_id: The ID of the event.
 
         Returns:
-            List of speaker dictionaries.
+            SpeakerList object.
         """
-        return await self._get(f"events/{event_id}/speakers")
+        response_data = await self._get(f"events/{event_id}/speakers")
+        return SpeakerList(**response_data)
 
-    async def get_event_sessions(self, event_id: str) -> List[Dict[str, Any]]:
+    async def get_event_sessions(self, event_id: str) -> SessionList:
         """
         Get all sessions (talks) for a specific event (Async).
 
@@ -83,6 +90,8 @@ class AsyncEventsMixin:
             event_id: The ID of the event.
 
         Returns:
-            List of session dictionaries.
+            SessionList object.
         """
-        return await self._get(f"events/{event_id}/sessions")
+        response_data = await self._get(f"events/{event_id}/sessions")
+        return SessionList(**response_data)
+
