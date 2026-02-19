@@ -68,6 +68,87 @@ def show_event(event_id: int):
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
 
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+
+@events_app.command("create")
+def create_event(
+    name: str = typer.Option(..., help="Event name"),
+    identifier: str = typer.Option(..., help="Unique identifier (slug)"),
+    starts_at: str = typer.Option(..., help="Start time (ISO 8601)"),
+    ends_at: str = typer.Option(..., help="End time (ISO 8601)"),
+    timezone: str = typer.Option(..., help="Timezone (e.g. UTC, Asia/Kolkata)"),
+    privacy: str = typer.Option("public", help="Privacy setting"),
+    location: str = typer.Option(None, help="Location name"),
+    online: bool = typer.Option(False, help="Is the event online?")
+):
+    """Create a new event."""
+    try:
+        with console.status("[bold green]Creating event..."):
+            event = client.create_event(
+                name=name,
+                identifier=identifier,
+                starts_at=starts_at,
+                ends_at=ends_at,
+                timezone=timezone,
+                privacy=privacy,
+                location_name=location,
+                online=online
+            )
+        
+        console.print(f"[bold green]Event created successfully![/bold green]")
+        
+        content = f"""
+[bold]ID:[/bold] {event.id}
+[bold]Identifier:[/bold] {event.identifier}
+[bold]Start:[/bold] {event.starts_at}
+[bold]End:[/bold] {event.ends_at}
+[bold]Privacy:[/bold] {event.privacy}
+[bold]Location:[/bold] {event.location_name or 'Online'}
+        """
+        console.print(Panel(content, title=f"Event: {event.name}", expand=False))
+
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+
+@events_app.command("update")
+def update_event(
+    event_id: int = typer.Argument(..., help="ID of the event to update"),
+    name: str = typer.Option(None, help="New name"),
+    starts_at: str = typer.Option(None, help="New start time"),
+    ends_at: str = typer.Option(None, help="New end time"),
+    timezone: str = typer.Option(None, help="New timezone"),
+    privacy: str = typer.Option(None, help="New privacy setting"),
+    location: str = typer.Option(None, help="New location name")
+):
+    """Update an existing event."""
+    try:
+        with console.status(f"[bold green]Updating event {event_id}..."):
+            event = client.update_event(
+                event_id=event_id,
+                name=name,
+                starts_at=starts_at,
+                ends_at=ends_at,
+                timezone=timezone,
+                privacy=privacy,
+                location_name=location
+            )
+            
+        console.print(f"[bold green]Event updated successfully![/bold green]")
+        
+        content = f"""
+[bold]ID:[/bold] {event.id}
+[bold]Identifier:[/bold] {event.identifier}
+[bold]Start:[/bold] {event.starts_at}
+[bold]End:[/bold] {event.ends_at}
+[bold]Privacy:[/bold] {event.privacy}
+[bold]Location:[/bold] {event.location_name or 'Online'}
+        """
+        console.print(Panel(content, title=f"Event: {event.name}", expand=False))
+
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+
 organizers_app = typer.Typer(help="Manage organizers")
 app.add_typer(organizers_app, name="organizers")
 
