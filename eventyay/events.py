@@ -112,3 +112,82 @@ class EventsMixin:
         params = {'page': page}
         response_data = self._get(f"events/{event_id}/speakers", params=params)
         return SpeakerList(**response_data)
+
+    def create_event(self, name: str, identifier: str, starts_at: str, ends_at: str,
+                    timezone: str, privacy: str = "public", location_name: Optional[str] = None,
+                    online: bool = False) -> Event:
+        """
+        Create a new event.
+        
+        Args:
+            name: Event name.
+            identifier: Unique identifier (slug).
+            starts_at: Start time (ISO 8601).
+            ends_at: End time (ISO 8601).
+            timezone: Timezone string (e.g. 'UTC').
+            privacy: 'public' or 'private'.
+            location_name: Name of the location.
+            online: Whether the event is online.
+            
+        Returns:
+            Created Event object.
+        """
+        data = {
+            'name': name,
+            'identifier': identifier,
+            'starts_at': starts_at,
+            'ends_at': ends_at,
+            'timezone': timezone,
+            'privacy': privacy,
+            'online': online
+        }
+        if location_name: data['location_name'] = location_name
+        
+        response_data = self._post('events', json=data)
+        return Event(**response_data)
+
+    def update_event(self, event_id: int, name: Optional[str] = None, 
+                    starts_at: Optional[str] = None, ends_at: Optional[str] = None,
+                    timezone: Optional[str] = None, privacy: Optional[str] = None,
+                    location_name: Optional[str] = None) -> Event:
+        """
+        Update an existing event.
+        
+        Args:
+            event_id: The ID of the event.
+            name: New name.
+            starts_at: New start time.
+            ends_at: New end time.
+            timezone: New timezone.
+            privacy: New privacy setting.
+            location_name: New location name.
+            
+        Returns:
+            Updated Event object.
+        """
+        data = {}
+        if name: data['name'] = name
+        if starts_at: data['starts_at'] = starts_at
+        if ends_at: data['ends_at'] = ends_at
+        if timezone: data['timezone'] = timezone
+        if privacy: data['privacy'] = privacy
+        if location_name: data['location_name'] = location_name
+        
+        if not data:
+            return self.get_event(event_id)
+            
+        response_data = self._patch(f'events/{event_id}', json=data)
+        return Event(**response_data)
+
+    def delete_event(self, event_id: int) -> bool:
+        """
+        Delete an event.
+        
+        Args:
+            event_id: The ID of the event.
+            
+        Returns:
+            True if successful.
+        """
+        self._delete(f'events/{event_id}')
+        return True
