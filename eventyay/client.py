@@ -147,56 +147,6 @@ class EventyayClient(OrganizersMixin, EventsMixin):
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
     
-    def _post(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Make a POST request to the API."""
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        
-        try:
-            response = self.session.post(url, json=data)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.HTTPError as e:
-            self._handle_error(e.response)
-        except requests.exceptions.ConnectionError:
-            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
-        except requests.exceptions.Timeout:
-            raise EventyayTimeoutError("The request to the Eventyay API timed out.")
-        except requests.exceptions.RequestException as e:
-            raise EventyayAPIError(f"Request failed: {str(e)}")
-    
-    def _put(self, endpoint: str, data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Make a PUT request to the API."""
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        
-        try:
-            response = self.session.put(url, json=data)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.HTTPError as e:
-            self._handle_error(e.response)
-        except requests.exceptions.ConnectionError:
-            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
-        except requests.exceptions.Timeout:
-            raise EventyayTimeoutError("The request to the Eventyay API timed out.")
-        except requests.exceptions.RequestException as e:
-            raise EventyayAPIError(f"Request failed: {str(e)}")
-    
-    def _delete(self, endpoint: str) -> None:
-        """Make a DELETE request to the API."""
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        
-        try:
-            response = self.session.delete(url)
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            self._handle_error(e.response)
-        except requests.exceptions.ConnectionError:
-            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
-        except requests.exceptions.Timeout:
-            raise EventyayTimeoutError("The request to the Eventyay API timed out.")
-        except requests.exceptions.RequestException as e:
-            raise EventyayAPIError(f"Request failed: {str(e)}")
-    
     def _handle_error(self, response: requests.Response) -> None:
         """
         Handle HTTP errors and raise appropriate exceptions.
