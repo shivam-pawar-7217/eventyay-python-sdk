@@ -82,3 +82,69 @@ class OrganizersMixin:
         params = {'page': page}
         response_data = self._get(f"organizers/{organizer_id}/events", params=params)
         return EventList(**response_data)
+
+    def create_organizer(self, name: str, description: Optional[str] = None, 
+                        url: Optional[str] = None, logo_url: Optional[str] = None) -> Organizer:
+        """
+        Create a new organizer.
+        
+        Args:
+            name: Name of the organizer (Required).
+            description: Description of the organizer.
+            url: Website URL.
+            logo_url: Logo URL.
+            
+        Returns:
+            Created Organizer object.
+        """
+        data = {
+            'name': name
+        }
+        if description: data['description'] = description
+        if url: data['url'] = url
+        if logo_url: data['logo_url'] = logo_url
+        
+        response_data = self._post('organizers', json=data)
+        return Organizer(**response_data)
+
+    def update_organizer(self, organizer_id: str, name: Optional[str] = None, 
+                        description: Optional[str] = None, url: Optional[str] = None, 
+                        logo_url: Optional[str] = None) -> Organizer:
+        """
+        Update an existing organizer.
+        
+        Args:
+            organizer_id: The ID of the organizer to update.
+            name: New name.
+            description: New description.
+            url: New website URL.
+            logo_url: New logo URL.
+            
+        Returns:
+            Updated Organizer object.
+        """
+        data = {}
+        if name: data['name'] = name
+        if description: data['description'] = description
+        if url: data['url'] = url
+        if logo_url: data['logo_url'] = logo_url
+        
+        if not data:
+            # No updates provided, return current state
+            return self.get_organizer(organizer_id)
+            
+        response_data = self._patch(f'organizers/{organizer_id}', json=data)
+        return Organizer(**response_data)
+
+    def delete_organizer(self, organizer_id: str) -> bool:
+        """
+        Delete an organizer.
+        
+        Args:
+            organizer_id: The ID of the organizer to delete.
+            
+        Returns:
+            True if deletion was successful.
+        """
+        self._delete(f'organizers/{organizer_id}')
+        return True
