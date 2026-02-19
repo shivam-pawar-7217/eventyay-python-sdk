@@ -118,5 +118,67 @@ def show_organizer(organizer_id: str):
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
 
+@organizers_app.command("create")
+def create_organizer(
+    name: str = typer.Option(..., help="Name of the organizer"),
+    description: str = typer.Option(None, help="Description of the organizer"),
+    url: str = typer.Option(None, help="Website URL"),
+    logo_url: str = typer.Option(None, help="Logo URL")
+):
+    """Create a new organizer."""
+    try:
+        with console.status("[bold green]Creating organizer..."):
+            org = client.create_organizer(
+                name=name,
+                description=description,
+                url=url,
+                logo_url=logo_url
+            )
+        
+        console.print(f"[bold green]Organizer created successfully![/bold green]")
+        
+        content = f"""
+[bold]ID:[/bold] {org.id}
+[bold]Name:[/bold] {org.name}
+[bold]Description:[/bold] {org.description or 'N/A'}
+[bold]URL:[/bold] {org.url or 'N/A'}
+        """
+        console.print(Panel(content, title=f"Organizer: {org.name}", expand=False))
+
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+
+@organizers_app.command("update")
+def update_organizer(
+    organizer_id: str = typer.Argument(..., help="ID of the organizer to update"),
+    name: str = typer.Option(None, help="New name"),
+    description: str = typer.Option(None, help="New description"),
+    url: str = typer.Option(None, help="New website URL"),
+    logo_url: str = typer.Option(None, help="New logo URL")
+):
+    """Update an existing organizer."""
+    try:
+        with console.status(f"[bold green]Updating organizer {organizer_id}..."):
+            org = client.update_organizer(
+                organizer_id=organizer_id,
+                name=name,
+                description=description,
+                url=url,
+                logo_url=logo_url
+            )
+            
+        console.print(f"[bold green]Organizer updated successfully![/bold green]")
+        
+        content = f"""
+[bold]ID:[/bold] {org.id}
+[bold]Name:[/bold] {org.name}
+[bold]Description:[/bold] {org.description or 'N/A'}
+[bold]URL:[/bold] {org.url or 'N/A'}
+        """
+        console.print(Panel(content, title=f"Organizer: {org.name}", expand=False))
+
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+
 if __name__ == "__main__":
     app()
