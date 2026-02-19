@@ -111,6 +111,25 @@ def create_event(
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
 
+@events_app.command("delete")
+def delete_event(
+    event_id: int = typer.Argument(..., help="ID of the event to delete"),
+    force: bool = typer.Option(False, "--force", "-f", help="Force delete without confirmation")
+):
+    """Delete an event."""
+    try:
+        if not force:
+            if not typer.confirm(f"Are you sure you want to delete event {event_id}?"):
+                console.print("Aborted.")
+                raise typer.Abort()
+        
+        with console.status(f"[bold red]Deleting event {event_id}..."):
+            client.delete_event(event_id)
+            
+        console.print(f"[bold green]Event {event_id} deleted successfully![/bold green]")
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+
 @events_app.command("update")
 def update_event(
     event_id: int = typer.Argument(..., help="ID of the event to update"),
@@ -258,6 +277,25 @@ def update_organizer(
         """
         console.print(Panel(content, title=f"Organizer: {org.name}", expand=False))
 
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+
+@organizers_app.command("delete")
+def delete_organizer(
+    organizer_id: str = typer.Argument(..., help="ID of the organizer to delete"),
+    force: bool = typer.Option(False, "--force", "-f", help="Force delete without confirmation")
+):
+    """Delete an organizer."""
+    try:
+        if not force:
+            if not typer.confirm(f"Are you sure you want to delete organizer {organizer_id}?"):
+                console.print("Aborted.")
+                raise typer.Abort()
+        
+        with console.status(f"[bold red]Deleting organizer {organizer_id}..."):
+            client.delete_organizer(organizer_id)
+            
+        console.print(f"[bold green]Organizer {organizer_id} deleted successfully![/bold green]")
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
 
