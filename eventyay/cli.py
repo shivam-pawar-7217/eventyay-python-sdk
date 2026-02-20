@@ -68,9 +68,6 @@ def show_event(event_id: int):
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
 
-    except Exception as e:
-        console.print(f"[bold red]Error:[/bold red] {e}")
-
 @events_app.command("create")
 def create_event(
     name: str = typer.Option(..., help="Event name"),
