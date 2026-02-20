@@ -36,6 +36,7 @@ setup(
     ],
     python_requires=">=3.7",
     install_requires=requirements,
+    extras_require={
         "dev": [
             "pytest>=7.0.0",
             "pytest-cov>=3.0.0",
