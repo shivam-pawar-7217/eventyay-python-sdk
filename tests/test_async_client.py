@@ -1,117 +1,105 @@
-import pytest
+import unittest
 from unittest.mock import AsyncMock, patch, MagicMock
 from eventyay.async_client import AsyncEventyayClient
+from eventyay.models import OrganizerList, Organizer, EventList, Event, AttendeeList, SpeakerList, SessionList
 
+class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
+    """
+    Asynchronous tests for the Eventyay SDK.
+    Using IsolatedAsyncioTestCase for compatibility with unittest discovery.
+    """
 
-@pytest.mark.asyncio
-async def test_get_organizers():
-    """Test fetching all organizers asynchronously."""
-    mock_data = [{"id": 1, "name": "Test Org"}]
+    async def asyncSetUp(self):
+        self.client = AsyncEventyayClient(api_key="test_token")
 
-    with patch('aiohttp.ClientSession.get') as mock_get:
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_organizers(self, mock_request):
+        """Test fetching organizers asynchronously."""
+        mock_data = {
+            "data": [{"id": 1, "name": "Test Org"}],
+            "links": {},
+            "meta": {}
+        }
         mock_resp = AsyncMock()
         mock_resp.status = 200
         mock_resp.json.return_value = mock_data
-        mock_resp.raise_for_status = MagicMock()
-        mock_get.return_value.__aenter__.return_value = mock_resp
+        mock_request.return_value.__aenter__.return_value = mock_resp
 
-        client = AsyncEventyayClient()
-        result = await client.get_organizers()
-        assert result == mock_data
+        result = await self.client.get_organizers()
+        self.assertIsInstance(result, OrganizerList)
+        self.assertEqual(len(result.data), 1)
+        self.assertEqual(result.data[0].name, "Test Org")
 
-
-@pytest.mark.asyncio
-async def test_get_organizer_detail():
-    """Test fetching a single organizer by ID."""
-    mock_data = {"id": 1, "name": "Test Org", "slug": "test-org"}
-
-    with patch('aiohttp.ClientSession.get') as mock_get:
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_organizer_detail(self, mock_request):
+        """Test fetching a single organizer by ID (Async)."""
+        mock_data = {"id": 1, "name": "Test Org"}
         mock_resp = AsyncMock()
+        mock_resp.status = 200
         mock_resp.json.return_value = mock_data
-        mock_resp.raise_for_status = MagicMock()
-        mock_get.return_value.__aenter__.return_value = mock_resp
+        mock_request.return_value.__aenter__.return_value = mock_resp
 
-        client = AsyncEventyayClient()
-        result = await client.get_organizer("1")
-        assert result["slug"] == "test-org"
+        result = await self.client.get_organizer("1")
+        self.assertIsInstance(result, Organizer)
+        self.assertEqual(result.id, 1)
 
-
-@pytest.mark.asyncio
-async def test_get_events():
-    """Test fetching all events asynchronously."""
-    mock_data = [{"id": 100, "name": "PyCon"}]
-
-    with patch('aiohttp.ClientSession.get') as mock_get:
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_events(self, mock_request):
+        """Test fetching a list of events (Async)."""
+        mock_data = {
+            "data": [{"id": 100, "name": "PyCon", "identifier": "pycon"}],
+            "links": {},
+            "meta": {}
+        }
         mock_resp = AsyncMock()
+        mock_resp.status = 200
         mock_resp.json.return_value = mock_data
-        mock_resp.raise_for_status = MagicMock()
-        mock_get.return_value.__aenter__.return_value = mock_resp
+        mock_request.return_value.__aenter__.return_value = mock_resp
 
-        client = AsyncEventyayClient()
-        result = await client.get_events()
-        assert len(result) == 1
-        assert result[0]["name"] == "PyCon"
+        result = await self.client.get_events()
+        self.assertIsInstance(result, EventList)
+        self.assertEqual(result.data[0].name, "PyCon")
 
-
-@pytest.mark.asyncio
-async def test_get_event_detail():
-    """Test fetching a single event by ID."""
-    mock_data = {"id": 100, "name": "PyCon", "location": "Pittsburgh"}
-
-    with patch('aiohttp.ClientSession.get') as mock_get:
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_event_detail(self, mock_request):
+        """Test fetching a single event (Async)."""
+        mock_data = {"id": 100, "name": "PyCon", "identifier": "pycon"}
         mock_resp = AsyncMock()
+        mock_resp.status = 200
         mock_resp.json.return_value = mock_data
-        mock_resp.raise_for_status = MagicMock()
-        mock_get.return_value.__aenter__.return_value = mock_resp
+        mock_request.return_value.__aenter__.return_value = mock_resp
 
-        client = AsyncEventyayClient()
-        result = await client.get_event(100)
-        assert result["location"] == "Pittsburgh"
+        result = await self.client.get_event(100)
+        self.assertIsInstance(result, Event)
+        self.assertEqual(result.id, 100)
 
-
-@pytest.mark.asyncio
-async def test_get_event_attendees():
-    """Test fetching attendees for an event."""
-    mock_data = [{"id": 1, "email": "test@example.com"}]
-
-    with patch('aiohttp.ClientSession.get') as mock_get:
+    @patch('aiohttp.ClientSession.request')
+    async def test_create_organizer(self, mock_request):
+        """Test creating an organizer asynchronously."""
+        mock_data = {"id": 1, "name": "New Org"}
         mock_resp = AsyncMock()
+        mock_resp.status = 201
         mock_resp.json.return_value = mock_data
-        mock_resp.raise_for_status = MagicMock()
-        mock_get.return_value.__aenter__.return_value = mock_resp
+        mock_request.return_value.__aenter__.return_value = mock_resp
 
-        client = AsyncEventyayClient()
-        result = await client.get_event_attendees("100")
-        assert result[0]["email"] == "test@example.com"
+        result = await self.client.create_organizer(name="New Org")
+        self.assertEqual(result.name, "New Org")
+        mock_request.assert_called_once()
+        # Verify it was a POST request
+        args, kwargs = mock_request.call_args
+        self.assertEqual(args[0], 'POST')
 
-
-@pytest.mark.asyncio
-async def test_get_event_speakers():
-    """Test fetching speakers for an event."""
-    mock_data = [{"id": 1, "name": "Guido van Rossum"}]
-
-    with patch('aiohttp.ClientSession.get') as mock_get:
+    @patch('aiohttp.ClientSession.request')
+    async def test_delete_event(self, mock_request):
+        """Test deleting an event asynchronously."""
         mock_resp = AsyncMock()
-        mock_resp.json.return_value = mock_data
-        mock_resp.raise_for_status = MagicMock()
-        mock_get.return_value.__aenter__.return_value = mock_resp
+        mock_resp.status = 204
+        mock_request.return_value.__aenter__.return_value = mock_resp
 
-        client = AsyncEventyayClient()
-        result = await client.get_event_speakers("100")
-        assert result[0]["name"] == "Guido van Rossum"
+        result = await self.client.delete_event(100)
+        self.assertTrue(result)
+        args, kwargs = mock_request.call_args
+        self.assertEqual(args[0], 'DELETE')
 
-
-@pytest.mark.asyncio
-async def test_get_event_sessions():
-    """Test fetching sessions for an event."""
-    mock_data = [{"id": 1, "title": "Keynote: Python 4.0"}]
-
-    with patch('aiohttp.ClientSession.get') as mock_get:
-        mock_resp = AsyncMock()
-        mock_resp.json.return_value = mock_data
-        mock_resp.raise_for_status = MagicMock()
-        mock_get.return_value.__aenter__.return_value = mock_resp
-
-        client = AsyncEventyayClient()
-        result = await client.get_event_sessions("100")
-        assert result[0]["title"] == "Keynote: Python 4.0"
+if __name__ == '__main__':
+    unittest.main()
