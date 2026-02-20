@@ -28,7 +28,7 @@ class TestErrors(unittest.TestCase):
         self.client.session.post.side_effect = requests.exceptions.ConnectionError("No internet")
         
         with self.assertRaises(EventyayConnectionError):
-            self.client._post("events", data={})
+            self.client._post("events", json={})
 
 if __name__ == '__main__':
     unittest.main()

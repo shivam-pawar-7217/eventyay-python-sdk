@@ -25,8 +25,8 @@ class TestPagination(unittest.TestCase):
         all_orgs = client.get_all_organizers()
         
         self.assertEqual(len(all_orgs), 2)
-        self.assertEqual(all_orgs[0]['name'], 'Org 1')
-        self.assertEqual(all_orgs[1]['name'], 'Org 2')
+        self.assertEqual(all_orgs[0].name, 'Org 1')
+        self.assertEqual(all_orgs[1].name, 'Org 2')
         self.assertEqual(mock_get.call_count, 2)
 
 if __name__ == '__main__':
