@@ -86,11 +86,3 @@ class AsyncEventyayClient(AsyncOrganizersMixin, AsyncEventsMixin):
                     raise EventyayConnectionError(f"Async {method} request failed: {e}")
                 await asyncio.sleep(backoff * (2 ** attempt))
             
-    async def get_events(self):
-        """Deprecated: Use Mixin method."""
-        # This was the old skeleton method. We should remove it or delegate to mixin.
-        # Since we inherit from AsyncEventsMixin, we should just remove this 
-        # to avoid shadowing the mixin method.
-        # But wait, AsyncEventsMixin isn't implemented fully yet. 
-        # Let's remove this method so the mixin takes over when implemented.
-        pass

@@ -1,0 +1,2 @@
+[console_scripts]
+eventyay = eventyay.cli:app
