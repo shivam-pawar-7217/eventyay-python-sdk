@@ -3,18 +3,22 @@ from .utils import parse_pagination_params
 from .models import Event, EventList, AttendeeList, SpeakerList, SessionList
 
 class EventsMixin:
-    """Mixin for Event-related API methods."""
+    """
+    Mixin class providing methods for interacting with Event-related endpoints.
+    
+    This mixin is intended to be used with the main EventyayClient class.
+    """
 
     def get_events(self, page: int = 1, page_size: int = 10) -> EventList:
         """
-        Get a list of events.
+        Retrieves a paginated list of events.
         
         Args:
-            page: Page number (default: 1)
-            page_size: Number of results per page (default: 10)
+            page (int, optional): The page number to retrieve. Defaults to 1.
+            page_size (int, optional): The number of events per page. Defaults to 10.
             
         Returns:
-            EventList object containing data (list of Events) and pagination info.
+            EventList: A Pydantic model containing the list of events and pagination metadata.
         """
         params = {
             'page': page,
@@ -25,11 +29,13 @@ class EventsMixin:
 
     def get_all_events(self) -> List[Event]:
         """
-        Fetch ALL events by automatically iterating through pages.
-        WARNING: This can take a long time for large datasets.
-        
+        Fetches all events from the API by automatically iterating through all pages.
+
+        .. warning::
+           This method can be slow for large datasets. Use with caution.
+
         Returns:
-            Complete list of all Event objects.
+            List[Event]: A flat list of all Event objects.
         """
         all_events = []
         page = 1
@@ -57,27 +63,30 @@ class EventsMixin:
 
     def get_event(self, event_id: int) -> Event:
         """
-        Get a single event by ID.
+        Fetches details for a single specific event.
         
         Args:
-            event_id: The ID of the event to retrieve
+            event_id (int): The unique identifier of the event.
             
         Returns:
-            Event object.
+            Event: The detailed Event object.
+            
+        Raises:
+            EventyayNotFoundError: If no event is found with the given ID.
         """
         response_data = self._get(f'events/{event_id}')
         return Event(**response_data)
 
     def get_event_attendees(self, event_id: str, page: int = 1) -> AttendeeList:
         """
-        Get all attendees for a specific event.
+        Retrieves a paginated list of attendees for a specific event.
 
         Args:
-            event_id: The ID of the event.
-            page: Page number (default: 1).
+            event_id (str): The unique identifier of the event.
+            page (int, optional): The page number to retrieve. Defaults to 1.
 
         Returns:
-            AttendeeList object.
+            AttendeeList: A Pydantic model containing the list of attendees.
         """
         params = {'page': page}
         response_data = self._get(f"events/{event_id}/attendees", params=params)
@@ -85,14 +94,14 @@ class EventsMixin:
 
     def get_event_sessions(self, event_id: str, page: int = 1) -> SessionList:
         """
-        Get all sessions (talks) for a specific event.
+        Retrieves a paginated list of sessions for a specific event.
 
         Args:
-            event_id: The ID of the event.
-            page: Page number (default: 1).
+            event_id (str): The unique identifier of the event.
+            page (int, optional): The page number to retrieve. Defaults to 1.
 
         Returns:
-            SessionList object.
+            SessionList: A Pydantic model containing the list of sessions.
         """
         params = {'page': page}
         response_data = self._get(f"events/{event_id}/sessions", params=params)
@@ -100,14 +109,14 @@ class EventsMixin:
 
     def get_event_speakers(self, event_id: str, page: int = 1) -> SpeakerList:
         """
-        Get all speakers for a specific event.
+        Retrieves a paginated list of speakers for a specific event.
 
         Args:
-            event_id: The ID of the event.
-            page: Page number (default: 1).
+            event_id (str): The unique identifier of the event.
+            page (int, optional): The page number to retrieve. Defaults to 1.
 
         Returns:
-            SpeakerList object.
+            SpeakerList: A Pydantic model containing the list of speakers.
         """
         params = {'page': page}
         response_data = self._get(f"events/{event_id}/speakers", params=params)
@@ -117,20 +126,20 @@ class EventsMixin:
                     timezone: str, privacy: str = "public", location_name: Optional[str] = None,
                     online: bool = False) -> Event:
         """
-        Create a new event.
+        Creates a new event.
         
         Args:
-            name: Event name.
-            identifier: Unique identifier (slug).
-            starts_at: Start time (ISO 8601).
-            ends_at: End time (ISO 8601).
-            timezone: Timezone string (e.g. 'UTC').
-            privacy: 'public' or 'private'.
-            location_name: Name of the location.
-            online: Whether the event is online.
+            name (str): The name of the event.
+            identifier (str): A unique slug or identifier for the event.
+            starts_at (str): Start time in ISO 8601 format.
+            ends_at (str): End time in ISO 8601 format.
+            timezone (str): Timezone string (e.g., 'UTC', 'Asia/Kolkata').
+            privacy (str, optional): Event privacy setting ('public' or 'private'). Defaults to "public".
+            location_name (str, optional): Name of the physical location.
+            online (bool, optional): Whether the event is virtual. Defaults to False.
             
         Returns:
-            Created Event object.
+            Event: The newly created Event object.
         """
         data = {
             'name': name,
@@ -151,19 +160,19 @@ class EventsMixin:
                     timezone: Optional[str] = None, privacy: Optional[str] = None,
                     location_name: Optional[str] = None) -> Event:
         """
-        Update an existing event.
+        Updates an existing event.
         
         Args:
-            event_id: The ID of the event.
-            name: New name.
-            starts_at: New start time.
-            ends_at: New end time.
-            timezone: New timezone.
-            privacy: New privacy setting.
-            location_name: New location name.
+            event_id (int): The unique identifier of the event to update.
+            name (str, optional): New name.
+            starts_at (str, optional): New start time.
+            ends_at (str, optional): New end time.
+            timezone (str, optional): New timezone.
+            privacy (str, optional): New privacy setting.
+            location_name (str, optional): New location name.
             
         Returns:
-            Updated Event object.
+            Event: The updated Event object.
         """
         data = {}
         if name: data['name'] = name
@@ -181,13 +190,13 @@ class EventsMixin:
 
     def delete_event(self, event_id: int) -> bool:
         """
-        Delete an event.
+        Permanently deletes an event.
         
         Args:
-            event_id: The ID of the event.
+            event_id (int): The unique identifier of the event to delete.
             
         Returns:
-            True if successful.
+            bool: True if deletion was successful.
         """
         self._delete(f'events/{event_id}')
         return True

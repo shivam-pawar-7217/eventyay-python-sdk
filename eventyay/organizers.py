@@ -3,18 +3,22 @@ from .utils import parse_pagination_params
 from .models import Organizer, OrganizerList, EventList, Event
 
 class OrganizersMixin:
-    """Mixin for Organizer-related API methods."""
+    """
+    Mixin class providing methods for interacting with Organizer-related endpoints.
+    
+    This mixin is intended to be used with the main EventyayClient class.
+    """
 
     def get_organizers(self, page: int = 1, page_size: int = 10) -> OrganizerList:
         """
-        Get a list of organizers.
+        Retrieves a paginated list of organizers.
         
         Args:
-            page: Page number (default: 1)
-            page_size: Number of results per page (default: 10)
+            page (int, optional): The page number to retrieve. Defaults to 1.
+            page_size (int, optional): The number of organizers per page. Defaults to 10.
             
         Returns:
-            OrganizerList object containing data (list of Organizers) and pagination info.
+            OrganizerList: A Pydantic model containing the list of organizers and pagination metadata.
         """
         params = {
             'page': page,
@@ -25,11 +29,14 @@ class OrganizersMixin:
 
     def get_all_organizers(self) -> List[Organizer]:
         """
-        Fetch ALL organizers by automatically iterating through pages.
-        WARNING: This can take a long time for large datasets.
-        
+        Fetches all organizers from the API by automatically iterating through all pages.
+
+        .. warning::
+           This method can be slow and may consume significant bandwidth/API quota 
+           if there are a large number of organizers.
+
         Returns:
-            Complete list of all Organizer objects.
+            List[Organizer]: A complete flat list of all Organizer objects.
         """
         all_organizers = []
         page = 1
@@ -57,27 +64,30 @@ class OrganizersMixin:
 
     def get_organizer(self, organizer_id: str) -> Organizer:
         """
-        Get details of a specific organizer.
+        Fetches details for a single specific organizer.
         
         Args:
-            organizer_id: The ID of the organizer.
+            organizer_id (str): The unique identifier of the organizer.
             
         Returns:
-            Organizer object.
+            Organizer: The detailed Organizer object.
+            
+        Raises:
+            EventyayNotFoundError: If no organizer is found with the given ID.
         """
         response_data = self._get(f'organizers/{organizer_id}')
         return Organizer(**response_data)
 
     def get_organizer_events(self, organizer_id: str, page: int = 1) -> EventList:
         """
-        Get all events for a specific organizer.
+        Retrieves a paginated list of events belonging to a specific organizer.
 
         Args:
-            organizer_id: The ID of the organizer.
-            page: Page number (default: 1).
+            organizer_id (str): The unique identifier of the organizer.
+            page (int, optional): The page number to retrieve. Defaults to 1.
 
         Returns:
-            EventList object containing events and pagination info.
+            EventList: A Pydantic model containing the list of events and pagination metadata.
         """
         params = {'page': page}
         response_data = self._get(f"organizers/{organizer_id}/events", params=params)
@@ -86,16 +96,16 @@ class OrganizersMixin:
     def create_organizer(self, name: str, description: Optional[str] = None, 
                         url: Optional[str] = None, logo_url: Optional[str] = None) -> Organizer:
         """
-        Create a new organizer.
+        Creates a new organizer.
         
         Args:
-            name: Name of the organizer (Required).
-            description: Description of the organizer.
-            url: Website URL.
-            logo_url: Logo URL.
+            name (str): The name of the organizer.
+            description (str, optional): A brief description of the organizer.
+            url (str, optional): The official website URL of the organizer.
+            logo_url (str, optional): A URL pointing to the organizer's logo image.
             
         Returns:
-            Created Organizer object.
+            Organizer: The newly created Organizer object as returned by the API.
         """
         data = {
             'name': name
@@ -111,17 +121,17 @@ class OrganizersMixin:
                         description: Optional[str] = None, url: Optional[str] = None, 
                         logo_url: Optional[str] = None) -> Organizer:
         """
-        Update an existing organizer.
+        Updates an existing organizer's information (Partial updates supported).
         
         Args:
-            organizer_id: The ID of the organizer to update.
-            name: New name.
-            description: New description.
-            url: New website URL.
-            logo_url: New logo URL.
+            organizer_id (str): The unique identifier of the organizer to update.
+            name (str, optional): The new name for the organizer.
+            description (str, optional): The new description.
+            url (str, optional): The new website URL.
+            logo_url (str, optional): The new logo URL.
             
         Returns:
-            Updated Organizer object.
+            Organizer: The updated Organizer object.
         """
         data = {}
         if name: data['name'] = name
@@ -138,13 +148,16 @@ class OrganizersMixin:
 
     def delete_organizer(self, organizer_id: str) -> bool:
         """
-        Delete an organizer.
+        Permanently deletes an organizer from the system.
         
         Args:
-            organizer_id: The ID of the organizer to delete.
+            organizer_id (str): The unique identifier of the organizer to delete.
             
         Returns:
-            True if deletion was successful.
+            bool: Always True if the request was successful (204 No Content).
+            
+        Raises:
+            EventyayAPIError: If the deletion fails.
         """
         self._delete(f'organizers/{organizer_id}')
         return True

@@ -24,13 +24,26 @@ from .events import EventsMixin
 
 class EventyayClient(OrganizersMixin, EventsMixin):
     """
-    Main client for the Eventyay API.
+    The primary entry point for interacting with the Eventyay REST API.
     
-    Client for the Eventyay API.
-    
+    This client combines multiple mixins to provide a unified interface for
+    managing organizers, events, tickets, and more. It handles authentication,
+    retries, and error mapping automatically.
+
+    Example:
+        ```python
+        from eventyay import EventyayClient
+        
+        client = EventyayClient(api_key="your_api_key")
+        events = client.get_events()
+        for event in events.data:
+            print(event.name)
+        ```
+
     Attributes:
-        base_url: The base URL of the API.
-        api_key: The API key for authentication.
+        base_url (str): The base URL of the Eventyay API (e.g., https://api.eventyay.com/v1).
+        api_key (Optional[str]): Your Eventyay API key for authenticated requests.
+        session (requests.Session): The underlying requests session with retry logic.
     """
     
     def __init__(
@@ -38,6 +51,13 @@ class EventyayClient(OrganizersMixin, EventsMixin):
         base_url: str = "https://dev.eventyay.com/api/v1",
         api_key: Optional[str] = None
     ):
+        """
+        Initializes the EventyayClient.
+
+        Args:
+            base_url (str, optional): The API base URL. Defaults to the development server.
+            api_key (str, optional): Your API key. If omitted, only public endpoints work.
+        """
         self.base_url = base_url.rstrip('/')
         self.api_key = api_key
         self.session = requests.Session()
@@ -47,7 +67,7 @@ class EventyayClient(OrganizersMixin, EventsMixin):
             total=3,
             backoff_factor=1, # 1s, 2s, 4s
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET", "OPTIONS"]
+            allowed_methods=["HEAD", "GET", "OPTIONS", "POST", "PATCH", "DELETE"]
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
@@ -65,19 +85,19 @@ class EventyayClient(OrganizersMixin, EventsMixin):
     
     def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Make a GET request to the API.
+        Performs a GET request to a specified endpoint.
         
         Args:
-            endpoint: The API endpoint (without base URL)
-            params: Optional query parameters
+            endpoint (str): The API endpoint path (e.g., 'events').
+            params (dict, optional): Query parameters to include.
             
         Returns:
-            Response JSON data
+            Dict[str, Any]: The parsed JSON response data.
             
         Raises:
-            EventyayAPIError: For general API errors
-            EventyayAuthenticationError: For authentication failures
-            EventyayNotFoundError: For 404 errors
+            EventyayAPIError: If the request fails or the server returns an error.
+            EventyayAuthenticationError: If the API key is missing or invalid.
+            EventyayNotFoundError: If the requested resource does not exist.
         """
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         
@@ -95,7 +115,16 @@ class EventyayClient(OrganizersMixin, EventsMixin):
             raise EventyayAPIError(f"Request failed: {str(e)}")
     
     def _post(self, endpoint: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Make a POST request to the API."""
+        """
+        Performs a POST request to a specified endpoint.
+
+        Args:
+            endpoint (str): The API endpoint path.
+            json (dict, optional): The JSON payload for the request.
+
+        Returns:
+            Dict[str, Any]: The parsed JSON response data.
+        """
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         
         try:
@@ -112,7 +141,16 @@ class EventyayClient(OrganizersMixin, EventsMixin):
             raise EventyayAPIError(f"Request failed: {str(e)}")
 
     def _patch(self, endpoint: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Make a PATCH request to the API."""
+        """
+        Performs a PATCH request to a specified endpoint.
+
+        Args:
+            endpoint (str): The API endpoint path.
+            json (dict, optional): The JSON payload (partial update).
+
+        Returns:
+            Dict[str, Any]: The parsed JSON response data.
+        """
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         
         try:
@@ -129,7 +167,15 @@ class EventyayClient(OrganizersMixin, EventsMixin):
             raise EventyayAPIError(f"Request failed: {str(e)}")
     
     def _delete(self, endpoint: str) -> None:
-        """Make a DELETE request to the API."""
+        """
+        Performs a DELETE request to a specified endpoint.
+
+        Args:
+            endpoint (str): The API endpoint path.
+
+        Raises:
+            EventyayAPIError: If deletion fails.
+        """
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         
         try:
@@ -149,10 +195,10 @@ class EventyayClient(OrganizersMixin, EventsMixin):
     
     def _handle_error(self, response: requests.Response) -> None:
         """
-        Handle HTTP errors and raise appropriate exceptions.
+        Maps HTTP error responses to SDK-specific exceptions.
         
         Args:
-            response: The failed response object
+            response (requests.Response): The failing response object.
         """
         status_code = response.status_code
         
