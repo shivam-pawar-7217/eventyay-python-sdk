@@ -1,5 +1,5 @@
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, HttpUrl, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 class Organizer(BaseModel):
     """
