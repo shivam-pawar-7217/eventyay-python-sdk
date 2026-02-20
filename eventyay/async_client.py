@@ -41,6 +41,24 @@ class AsyncEventyayClient(AsyncOrganizersMixin, AsyncEventsMixin):
 
     async def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Async GET request with automatic retries for rate limits."""
+        return await self._request('GET', endpoint, params=params)
+            
+    async def _post(self, endpoint: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Async POST request."""
+        return await self._request('POST', endpoint, json=json)
+
+    async def _patch(self, endpoint: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Async PATCH request."""
+        return await self._request('PATCH', endpoint, json=json)
+
+    async def _delete(self, endpoint: str) -> None:
+        """Async DELETE request."""
+        await self._request('DELETE', endpoint)
+
+    async def _request(self, method: str, endpoint: str, 
+                        params: Optional[Dict[str, Any]] = None,
+                        json: Optional[Dict[str, Any]] = None) -> Any:
+        """Internal helper for async requests with retry logic."""
         if not self._session:
             self._session = aiohttp.ClientSession(headers=self.headers)
             
@@ -50,21 +68,23 @@ class AsyncEventyayClient(AsyncOrganizersMixin, AsyncEventsMixin):
         
         for attempt in range(max_retries + 1):
             try:
-                async with self._session.get(url, params=params) as response:
+                async with self._session.request(method, url, params=params, json=json) as response:
                     if response.status == 429 and attempt < max_retries:
-                        # Rate Limit hit - Wait and Retry
                         wait_time = backoff * (2 ** attempt)
                         await asyncio.sleep(wait_time)
                         continue
+                    
+                    if method == 'DELETE' and response.status == 204:
+                        return None
                         
                     response.raise_for_status()
+                    if method == 'DELETE':
+                        return None
                     return await response.json()
             except aiohttp.ClientError as e:
                 if attempt == max_retries:
-                    raise EventyayConnectionError(f"Async request failed after {max_retries} retries: {e}")
-                
-        # Should not reach here
-        raise EventyayConnectionError("Request failed unknown error")
+                    raise EventyayConnectionError(f"Async {method} request failed: {e}")
+                await asyncio.sleep(backoff * (2 ** attempt))
             
     async def get_events(self):
         """Deprecated: Use Mixin method."""
