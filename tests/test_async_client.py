@@ -62,7 +62,10 @@ class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
         mock_resp.raise_for_status = MagicMock()
         mock_request.return_value.__aenter__.return_value = mock_resp
 
+        import inspect
+        print(f"DEBUG: get_events source:\n{inspect.getsource(self.client.get_events)}")
         result = await self.client.get_events()
+        print(f"DEBUG: result: {result}")
         self.assertIsInstance(result, EventList)
         self.assertEqual(result.data[0].name, "PyCon")
 
