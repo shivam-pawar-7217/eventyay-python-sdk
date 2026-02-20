@@ -12,6 +12,9 @@ class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.client = AsyncEventyayClient(api_key="test_token")
 
+    async def asyncTearDown(self):
+        await self.client.__aexit__(None, None, None)
+
     @patch('aiohttp.ClientSession.request')
     async def test_get_organizers(self, mock_request):
         """Test fetching organizers asynchronously."""
@@ -20,9 +23,10 @@ class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
             "links": {},
             "meta": {}
         }
-        mock_resp = AsyncMock()
+        mock_resp = MagicMock()
         mock_resp.status = 200
-        mock_resp.json.return_value = mock_data
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
         mock_request.return_value.__aenter__.return_value = mock_resp
 
         result = await self.client.get_organizers()
@@ -34,9 +38,10 @@ class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
     async def test_get_organizer_detail(self, mock_request):
         """Test fetching a single organizer by ID (Async)."""
         mock_data = {"id": 1, "name": "Test Org"}
-        mock_resp = AsyncMock()
+        mock_resp = MagicMock()
         mock_resp.status = 200
-        mock_resp.json.return_value = mock_data
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
         mock_request.return_value.__aenter__.return_value = mock_resp
 
         result = await self.client.get_organizer("1")
@@ -51,9 +56,10 @@ class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
             "links": {},
             "meta": {}
         }
-        mock_resp = AsyncMock()
+        mock_resp = MagicMock()
         mock_resp.status = 200
-        mock_resp.json.return_value = mock_data
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
         mock_request.return_value.__aenter__.return_value = mock_resp
 
         result = await self.client.get_events()
@@ -64,9 +70,10 @@ class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
     async def test_get_event_detail(self, mock_request):
         """Test fetching a single event (Async)."""
         mock_data = {"id": 100, "name": "PyCon", "identifier": "pycon"}
-        mock_resp = AsyncMock()
+        mock_resp = MagicMock()
         mock_resp.status = 200
-        mock_resp.json.return_value = mock_data
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
         mock_request.return_value.__aenter__.return_value = mock_resp
 
         result = await self.client.get_event(100)
@@ -77,9 +84,10 @@ class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
     async def test_create_organizer(self, mock_request):
         """Test creating an organizer asynchronously."""
         mock_data = {"id": 1, "name": "New Org"}
-        mock_resp = AsyncMock()
+        mock_resp = MagicMock()
         mock_resp.status = 201
-        mock_resp.json.return_value = mock_data
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
         mock_request.return_value.__aenter__.return_value = mock_resp
 
         result = await self.client.create_organizer(name="New Org")
@@ -92,8 +100,9 @@ class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
     @patch('aiohttp.ClientSession.request')
     async def test_delete_event(self, mock_request):
         """Test deleting an event asynchronously."""
-        mock_resp = AsyncMock()
+        mock_resp = MagicMock()
         mock_resp.status = 204
+        mock_resp.raise_for_status = MagicMock()
         mock_request.return_value.__aenter__.return_value = mock_resp
 
         result = await self.client.delete_event(100)
