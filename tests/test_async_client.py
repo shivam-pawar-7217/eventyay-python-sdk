@@ -157,5 +157,45 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.id, 1)
         self.assertEqual(result.name, "Early Bird")
 
+    # -------------------------------------------------------------
+    # ATTENDEES
+    # -------------------------------------------------------------
+    async def test_get_event_attendees(self):
+        mock_attendee_data = {
+            "data": [
+                {"id": 1, "email": "test@example.com", "firstname": "Async", "lastname": "Coder"}
+            ]
+        }
+        
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json = AsyncMock(return_value=mock_attendee_data)
+        
+        self.mock_session.get.return_value = mock_response
+        
+        result = await self.client.get_event_attendees("event-1")
+        
+        self.assertIsInstance(result, AttendeeList)
+        self.assertEqual(len(result.data), 1)
+        self.assertIsInstance(result.data[0], Attendee)
+        self.assertEqual(result.data[0].id, 1)
+
+    async def test_get_attendee(self):
+        mock_attendee_data = {
+             "id": 1, "email": "test@example.com", "firstname": "Async", "lastname": "Coder"
+        }
+        
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json = AsyncMock(return_value=mock_attendee_data)
+        
+        self.mock_session.get.return_value = mock_response
+        
+        result = await self.client.get_attendee("event-1", "1")
+        
+        self.assertIsInstance(result, Attendee)
+        self.assertEqual(result.id, 1)
+        self.assertEqual(result.firstname, "Async")
+
 if __name__ == '__main__':
     unittest.main()
