@@ -118,18 +118,19 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
     # -------------------------------------------------------------
     # TICKETS
     # -------------------------------------------------------------
-    async def test_get_event_tickets(self):
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_event_tickets(self, mock_request):
         mock_ticket_data = {
             "data": [
                 {"id": 1, "name": "Early Bird", "type": "paid", "price": 10.0}
             ]
         }
         
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json = AsyncMock(return_value=mock_ticket_data)
-        
-        self.mock_session.get.return_value = mock_response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_ticket_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
         
         result = await self.client.get_event_tickets("event-1")
         
@@ -138,16 +139,17 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(result.data[0], Ticket)
         self.assertEqual(result.data[0].id, 1)
 
-    async def test_get_ticket(self):
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_ticket(self, mock_request):
         mock_ticket_data = {
              "id": 1, "name": "Early Bird", "type": "paid", "price": 10.0
         }
         
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json = AsyncMock(return_value=mock_ticket_data)
-        
-        self.mock_session.get.return_value = mock_response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_ticket_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
         
         result = await self.client.get_ticket("event-1", "1")
         
@@ -158,18 +160,19 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
     # -------------------------------------------------------------
     # ATTENDEES
     # -------------------------------------------------------------
-    async def test_get_event_attendees(self):
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_event_attendees(self, mock_request):
         mock_attendee_data = {
             "data": [
                 {"id": 1, "email": "test@example.com", "firstname": "Async", "lastname": "Coder"}
             ]
         }
         
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json = AsyncMock(return_value=mock_attendee_data)
-        
-        self.mock_session.get.return_value = mock_response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_attendee_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
         
         result = await self.client.get_event_attendees("event-1")
         
@@ -178,16 +181,17 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(result.data[0], Attendee)
         self.assertEqual(result.data[0].id, 1)
 
-    async def test_get_attendee(self):
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_attendee(self, mock_request):
         mock_attendee_data = {
              "id": 1, "email": "test@example.com", "firstname": "Async", "lastname": "Coder"
         }
         
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json = AsyncMock(return_value=mock_attendee_data)
-        
-        self.mock_session.get.return_value = mock_response
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_attendee_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
         
         result = await self.client.get_attendee("event-1", "1")
         
