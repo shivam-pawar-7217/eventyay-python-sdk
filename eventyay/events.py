@@ -77,18 +77,19 @@ class EventsMixin:
         response_data = self._get(f'events/{event_id}')
         return Event(**response_data)
 
-    def get_event_attendees(self, event_id: str, page: int = 1) -> AttendeeList:
+    def get_event_attendees(self, event_id: str, page: int = 1, page_size: int = 10) -> AttendeeList:
         """
         Retrieves a paginated list of attendees for a specific event.
 
         Args:
             event_id (str): The unique identifier of the event.
             page (int, optional): The page number to retrieve. Defaults to 1.
+            page_size (int, optional): The number of attendees per page. Defaults to 10.
 
         Returns:
             AttendeeList: A Pydantic model containing the list of attendees.
         """
-        params = {'page': page}
+        params = {'page': page, 'page_size': page_size}
         response_data = self._get(f"events/{event_id}/attendees", params=params)
         return AttendeeList(**response_data)
 
