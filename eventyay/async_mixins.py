@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Optional
 from .models import (
     Organizer, OrganizerList,
-    Event, EventList, AttendeeList, SpeakerList, SessionList,
+    Event, EventList, Attendee, AttendeeList, SpeakerList, SessionList,
     Ticket, TicketList
 )
 

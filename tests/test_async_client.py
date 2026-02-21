@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import AsyncMock, patch, MagicMock
 from eventyay.async_client import (
-    AsyncClient,
+    AsyncEventyayClient,
     EventyayTimeoutError, EventyayRateLimitError
 )
 from eventyay.models import (
     Organizer, OrganizerList,
-    Event, EventList, AttendeeList,
+    Event, EventList, Attendee, AttendeeList,
     Ticket, TicketList
 )
 
