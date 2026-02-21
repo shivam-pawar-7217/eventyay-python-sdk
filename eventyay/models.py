@@ -143,3 +143,41 @@ class SessionList(BaseModel):
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra='ignore')
+
+class Ticket(BaseModel):
+    """
+    Represents a ticket type available for an event.
+
+    Attributes:
+        id (int): Unique identifier for the ticket.
+        name (str): Name of the ticket (e.g., 'General Admission', 'VIP').
+        description (Optional[str]): Description of what the ticket includes.
+        type (Optional[str]): Type of ticket (e.g., 'free', 'paid', 'donation').
+        price (Optional[float]): Price of the ticket.
+        quantity (Optional[int]): Total number of tickets available.
+        sales_starts_at (Optional[str]): When ticket sales begin.
+        sales_ends_at (Optional[str]): When ticket sales end.
+        is_hidden (bool): Whether the ticket is hidden from the public event page.
+    """
+    id: int
+    name: str
+    description: Optional[str] = None
+    type: Optional[str] = None
+    price: Optional[float] = None
+    quantity: Optional[int] = None
+    sales_starts_at: Optional[str] = None
+    sales_ends_at: Optional[str] = None
+    is_hidden: bool = False
+    
+    model_config = ConfigDict(extra='ignore')
+
+    def __str__(self):
+        type_str = f" - ${self.price}" if self.type == 'paid' else f" - {self.type}"
+        return f"Ticket(id={self.id}, name='{self.name}'{type_str})"
+
+class TicketList(BaseModel):
+    """Paginated response containing a list of tickets."""
+    data: List[Ticket]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra='ignore')
