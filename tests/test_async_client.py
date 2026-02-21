@@ -1,9 +1,16 @@
 import unittest
 from unittest.mock import AsyncMock, patch, MagicMock
-from eventyay.async_client import AsyncEventyayClient
-from eventyay.models import OrganizerList, Organizer, EventList, Event, AttendeeList, SpeakerList, SessionList
+from eventyay.async_client import (
+    AsyncClient,
+    EventyayTimeoutError, EventyayRateLimitError
+)
+from eventyay.models import (
+    Organizer, OrganizerList,
+    Event, EventList, AttendeeList,
+    Ticket, TicketList
+)
 
-class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
+class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
     """
     Asynchronous tests for the Eventyay SDK.
     Using IsolatedAsyncioTestCase for compatibility with unittest discovery.
@@ -109,6 +116,46 @@ class TestAsyncEventyayClient(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result)
         args, kwargs = mock_request.call_args
         self.assertEqual(args[0], 'DELETE')
+
+    # -------------------------------------------------------------
+    # TICKETS
+    # -------------------------------------------------------------
+    async def test_get_event_tickets(self):
+        mock_ticket_data = {
+            "data": [
+                {"id": 1, "name": "Early Bird", "type": "paid", "price": 10.0}
+            ]
+        }
+        
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json = AsyncMock(return_value=mock_ticket_data)
+        
+        self.mock_session.get.return_value = mock_response
+        
+        result = await self.client.get_event_tickets("event-1")
+        
+        self.assertIsInstance(result, TicketList)
+        self.assertEqual(len(result.data), 1)
+        self.assertIsInstance(result.data[0], Ticket)
+        self.assertEqual(result.data[0].id, 1)
+
+    async def test_get_ticket(self):
+        mock_ticket_data = {
+             "id": 1, "name": "Early Bird", "type": "paid", "price": 10.0
+        }
+        
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json = AsyncMock(return_value=mock_ticket_data)
+        
+        self.mock_session.get.return_value = mock_response
+        
+        result = await self.client.get_ticket("event-1", "1")
+        
+        self.assertIsInstance(result, Ticket)
+        self.assertEqual(result.id, 1)
+        self.assertEqual(result.name, "Early Bird")
 
 if __name__ == '__main__':
     unittest.main()
