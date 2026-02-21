@@ -21,8 +21,9 @@ from .exceptions import (
 
 from .organizers import OrganizersMixin
 from .events import EventsMixin
+from .tickets import TicketsMixin
 
-class EventyayClient(OrganizersMixin, EventsMixin):
+class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin):
     """
     The primary entry point for interacting with the Eventyay REST API.
     
