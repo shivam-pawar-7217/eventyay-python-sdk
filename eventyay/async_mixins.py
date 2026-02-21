@@ -1,7 +1,8 @@
 from typing import List, Dict, Any, Optional
 from .models import (
     Organizer, OrganizerList,
-    Event, EventList, AttendeeList, SpeakerList, SessionList
+    Event, EventList, AttendeeList, SpeakerList, SessionList,
+    Ticket, TicketList
 )
 
 class AsyncOrganizersMixin:
@@ -254,3 +255,42 @@ class AsyncEventsMixin:
         await self._delete(f'events/{event_id}')
         return True
 
+
+class AsyncTicketsMixin:
+    """Async methods for Tickets."""
+
+    async def get_event_tickets(self, event_identifier: str, page: int = 1, page_size: int = 10) -> TicketList:
+        """
+        Retrieves a paginated list of tickets for a specific event (Async).
+        
+        Args:
+            event_identifier (str): The unique identifier or slug of the event.
+            page (int, optional): The page number to retrieve. Defaults to 1.
+            page_size (int, optional): The number of tickets per page. Defaults to 10.
+            
+        Returns:
+            TicketList: A Pydantic model containing the list of tickets and pagination metadata.
+        """
+        params = {
+            'page': page,
+            'page_size': page_size
+        }
+        response_data = await self._get(f'events/{event_identifier}/tickets', params=params)
+        return TicketList(**response_data)
+
+    async def get_ticket(self, event_identifier: str, ticket_id: str) -> Ticket:
+        """
+        Fetches details for a single specific ticket (Async).
+        
+        Args:
+            event_identifier (str): The unique identifier or slug of the event.
+            ticket_id (str): The unique identifier of the ticket.
+            
+        Returns:
+            Ticket: The detailed Ticket object.
+            
+        Raises:
+            EventyayNotFoundError: If no ticket is found with the given ID.
+        """
+        response_data = await self._get(f'events/{event_identifier}/tickets/{ticket_id}')
+        return Ticket(**response_data)
