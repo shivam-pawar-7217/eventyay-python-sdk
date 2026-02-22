@@ -11,7 +11,6 @@ class TestWriteOperations(unittest.TestCase):
         # Arrange
         name = "New Org"
         expected_response = {"id": 1, "name": name, "description": "Desc"}
-        
         mock_response = Mock()
         mock_response.json.return_value = expected_response
         mock_response.status_code = 201
@@ -32,7 +31,6 @@ class TestWriteOperations(unittest.TestCase):
         org_id = "1"
         new_name = "Updated Org"
         expected_response = {"id": 1, "name": new_name}
-        
         mock_response = Mock()
         mock_response.json.return_value = expected_response
         mock_response.status_code = 200
@@ -51,9 +49,8 @@ class TestWriteOperations(unittest.TestCase):
     def test_delete_organizer(self):
         # Arrange
         org_id = "1"
-        
         mock_response = Mock()
-        mock_response.status_code = 204 # No Content
+        mock_response.status_code = 204  # No Content
         self.client.session.delete.return_value = mock_response
 
         # Act
@@ -71,12 +68,11 @@ class TestWriteOperations(unittest.TestCase):
         ends_at = "2026-01-01T18:00:00"
         timezone = "UTC"
         expected_response = {
-            "id": 101, 
-            "name": name, 
+            "id": 101,
+            "name": name,
             "identifier": identifier,
             "starts_at": starts_at
         }
-        
         mock_response = Mock()
         mock_response.json.return_value = expected_response
         mock_response.status_code = 201
@@ -84,7 +80,7 @@ class TestWriteOperations(unittest.TestCase):
 
         # Act
         result = self.client.create_event(
-            name=name, 
+            name=name,
             identifier=identifier,
             starts_at=starts_at,
             ends_at=ends_at,
@@ -97,6 +93,7 @@ class TestWriteOperations(unittest.TestCase):
         self.assertTrue(args[0].endswith("events"))
         self.assertEqual(kwargs['json']['identifier'], identifier)
         self.assertEqual(result.id, 101)
+
 
 if __name__ == '__main__':
     unittest.main()
