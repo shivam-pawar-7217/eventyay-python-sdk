@@ -5,7 +5,7 @@ from eventyay.exceptions import EventyayTimeoutError, EventyayRateLimitError
 from eventyay.models import (
     Organizer, OrganizerList,
     Event, EventList, Attendee, AttendeeList,
-    Ticket, TicketList
+    Ticket, TicketList, Speaker, Session
 )
 
 class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
@@ -198,6 +198,48 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(result, Attendee)
         self.assertEqual(result.id, 1)
         self.assertEqual(result.firstname, "Async")
+
+    # -------------------------------------------------------------
+    # SPEAKERS
+    # -------------------------------------------------------------
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_speaker(self, mock_request):
+        mock_speaker_data = {
+             "id": 1, "name": "Async Speaker", "short_biography": "Expert"
+        }
+        
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_speaker_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
+        
+        result = await self.client.get_speaker("event-1", "1")
+        
+        self.assertIsInstance(result, Speaker)
+        self.assertEqual(result.id, 1)
+        self.assertEqual(result.name, "Async Speaker")
+
+    # -------------------------------------------------------------
+    # SESSIONS
+    # -------------------------------------------------------------
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_session(self, mock_request):
+        mock_session_data = {
+             "id": 101, "title": "Async Session", "starts_at": "2026-02-22"
+        }
+        
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_session_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
+        
+        result = await self.client.get_session("event-1", "101")
+        
+        self.assertIsInstance(result, Session)
+        self.assertEqual(result.id, 101)
+        self.assertEqual(result.title, "Async Session")
 
 if __name__ == '__main__':
     unittest.main()

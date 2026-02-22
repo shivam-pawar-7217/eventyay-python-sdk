@@ -9,10 +9,11 @@ from .exceptions import (
 
 from .async_mixins import (
     AsyncOrganizersMixin, AsyncEventsMixin, 
-    AsyncTicketsMixin, AsyncAttendeesMixin
+    AsyncTicketsMixin, AsyncAttendeesMixin, AsyncSpeakersMixin,
+    AsyncSessionsMixin
 )
 
-class AsyncEventyayClient(AsyncOrganizersMixin, AsyncEventsMixin, AsyncTicketsMixin, AsyncAttendeesMixin):
+class AsyncEventyayClient(AsyncOrganizersMixin, AsyncEventsMixin, AsyncTicketsMixin, AsyncAttendeesMixin, AsyncSpeakersMixin, AsyncSessionsMixin):
     """
     Asynchronous client for the Eventyay API.
     Uses aiohttp for non-blocking I/O.

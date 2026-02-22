@@ -1,8 +1,8 @@
 from typing import List, Dict, Any, Optional
 from .models import (
     Organizer, OrganizerList,
-    Event, EventList, Attendee, AttendeeList, SpeakerList, SessionList,
-    Ticket, TicketList
+    Event, EventList, Attendee, AttendeeList, Speaker, SpeakerList, 
+    Session, SessionList, Ticket, TicketList
 )
 
 class AsyncOrganizersMixin:
@@ -331,4 +331,38 @@ class AsyncAttendeesMixin:
         """
         response_data = await self._get(f'events/{event_identifier}/attendees/{attendee_id}')
         return Attendee(**response_data)
+
+class AsyncSpeakersMixin:
+    """Async methods for standalone Speakers."""
+    
+    async def get_speaker(self, event_identifier: str, speaker_id: str) -> Speaker:
+        """
+        Fetches details for a single specific speaker asynchronously.
+        
+        Args:
+            event_identifier (str): The unique identifier or slug of the event.
+            speaker_id (str): The unique identifier of the speaker.
+            
+        Returns:
+            Speaker: The detailed Speaker object.
+        """
+        response_data = await self._get(f'events/{event_identifier}/speakers/{speaker_id}')
+        return Speaker(**response_data)
+
+class AsyncSessionsMixin:
+    """Async methods for standalone Sessions."""
+    
+    async def get_session(self, event_identifier: str, session_id: str) -> Session:
+        """
+        Fetches details for a single specific session asynchronously.
+        
+        Args:
+            event_identifier (str): The unique identifier or slug of the event.
+            session_id (str): The unique identifier of the session.
+            
+        Returns:
+            Session: The detailed Session object.
+        """
+        response_data = await self._get(f'events/{event_identifier}/sessions/{session_id}')
+        return Session(**response_data)
 
