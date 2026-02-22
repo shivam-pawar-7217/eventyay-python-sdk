@@ -144,6 +144,58 @@ class SessionList(BaseModel):
     meta: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra='ignore')
 
+class Track(BaseModel):
+    """
+    Represents an event track or category.
+
+    Attributes:
+        id (int): Unique identifier for the track.
+        name (str): The name of the track.
+        description (Optional[str]): A description of what this track covers.
+        color (Optional[str]): Background color code for UI elements.
+        font_color (Optional[str]): Font color code for UI elements.
+    """
+    id: int
+    name: str
+    description: Optional[str] = None
+    color: Optional[str] = None
+    font_color: Optional[str] = None
+    model_config = ConfigDict(extra='ignore')
+
+class Microlocation(BaseModel):
+    """
+    Represents a specific physical location or room within an event venue.
+
+    Attributes:
+        id (int): Unique identifier for the microlocation.
+        name (str): Name of the room/location (e.g. 'Main Hall', 'Room A').
+        latitude (Optional[float]): Geographic coordinate.
+        longitude (Optional[float]): Geographic coordinate.
+        floor (Optional[int]): Floor level within the building.
+        room (Optional[str]): Room number or identifier.
+    """
+    id: int
+    name: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    floor: Optional[int] = None
+    room: Optional[str] = None
+    model_config = ConfigDict(extra='ignore')
+
+class TrackList(BaseModel):
+    """Paginated response containing a list of tracks."""
+    data: List[Track]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra='ignore')
+
+class MicrolocationList(BaseModel):
+    """Paginated response containing a list of microlocations."""
+    data: List[Microlocation]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra='ignore')
+
 class Ticket(BaseModel):
     """
     Represents a ticket type available for an event.
