@@ -26,8 +26,15 @@ from .attendees import AttendeesMixin
 from .speakers import SpeakersMixin
 from .sessions import SessionsMixin
 from .tracks import TracksMixin
+from .microlocations import MicrolocationsMixin
+from .sponsors import SponsorsMixin
+from .discount_codes import DiscountCodesMixin
 
-class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin, AttendeesMixin, SpeakersMixin, SessionsMixin, TracksMixin):
+
+class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
+                     AttendeesMixin, SpeakersMixin, SessionsMixin,
+                     TracksMixin, MicrolocationsMixin, SponsorsMixin,
+                     DiscountCodesMixin):
     """
     The primary entry point for interacting with the Eventyay REST API.
     
