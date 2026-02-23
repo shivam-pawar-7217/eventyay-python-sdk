@@ -5,7 +5,9 @@ from eventyay.exceptions import EventyayTimeoutError, EventyayRateLimitError
 from eventyay.models import (
     Organizer, OrganizerList,
     Event, EventList, Attendee, AttendeeList,
-    Ticket, TicketList, Speaker, Session
+    Ticket, TicketList, Speaker, Session,
+    Track, TrackList, Microlocation, MicrolocationList,
+    Sponsor, SponsorList, DiscountCode, DiscountCodeList
 )
 
 class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
@@ -240,6 +242,124 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(result, Session)
         self.assertEqual(result.id, 101)
         self.assertEqual(result.title, "Async Session")
+
+    # -------------------------------------------------------------
+    # TRACKS
+    # -------------------------------------------------------------
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_event_tracks(self, mock_request):
+        mock_data = {
+            "data": [{"id": 1, "name": "AI Track", "color": "#FF0000"}],
+            "meta": {"total": 1}
+        }
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
+        result = await self.client.get_event_tracks("event-1")
+        self.assertIsInstance(result, TrackList)
+        self.assertEqual(len(result.data), 1)
+
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_track(self, mock_request):
+        mock_data = {"id": 1, "name": "AI Track"}
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
+        result = await self.client.get_track("event-1", "1")
+        self.assertIsInstance(result, Track)
+        self.assertEqual(result.name, "AI Track")
+
+    # -------------------------------------------------------------
+    # MICROLOCATIONS
+    # -------------------------------------------------------------
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_event_microlocations(self, mock_request):
+        mock_data = {
+            "data": [{"id": 1, "name": "Main Hall", "floor": 1}],
+            "meta": {"total": 1}
+        }
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
+        result = await self.client.get_event_microlocations("event-1")
+        self.assertIsInstance(result, MicrolocationList)
+
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_microlocation(self, mock_request):
+        mock_data = {"id": 1, "name": "Room A", "floor": 2}
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
+        result = await self.client.get_microlocation("event-1", "1")
+        self.assertIsInstance(result, Microlocation)
+        self.assertEqual(result.name, "Room A")
+
+    # -------------------------------------------------------------
+    # SPONSORS
+    # -------------------------------------------------------------
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_event_sponsors(self, mock_request):
+        mock_data = {
+            "data": [{"id": 1, "name": "TechCorp", "level": "Gold"}],
+            "meta": {"total": 1}
+        }
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
+        result = await self.client.get_event_sponsors("event-1")
+        self.assertIsInstance(result, SponsorList)
+
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_sponsor(self, mock_request):
+        mock_data = {"id": 1, "name": "TechCorp", "level": "Gold"}
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
+        result = await self.client.get_sponsor("event-1", "1")
+        self.assertIsInstance(result, Sponsor)
+        self.assertEqual(result.name, "TechCorp")
+
+    # -------------------------------------------------------------
+    # DISCOUNT CODES
+    # -------------------------------------------------------------
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_event_discount_codes(self, mock_request):
+        mock_data = {
+            "data": [{"id": 1, "code": "SAVE20", "value": 20.0}],
+            "meta": {"total": 1}
+        }
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
+        result = await self.client.get_event_discount_codes("event-1")
+        self.assertIsInstance(result, DiscountCodeList)
+
+    @patch('aiohttp.ClientSession.request')
+    async def test_get_discount_code(self, mock_request):
+        mock_data = {"id": 1, "code": "SAVE20", "type": "percent"}
+        mock_resp = MagicMock()
+        mock_resp.status = 200
+        mock_resp.json = AsyncMock(return_value=mock_data)
+        mock_resp.raise_for_status = MagicMock()
+        mock_request.return_value.__aenter__.return_value = mock_resp
+        result = await self.client.get_discount_code("event-1", "1")
+        self.assertIsInstance(result, DiscountCode)
+        self.assertEqual(result.code, "SAVE20")
+
 
 if __name__ == '__main__':
     unittest.main()
