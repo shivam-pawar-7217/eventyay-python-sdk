@@ -233,3 +233,73 @@ class TicketList(BaseModel):
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra='ignore')
+
+
+class Sponsor(BaseModel):
+    """
+    Represents a sponsor for an event.
+
+    Attributes:
+        id (int): Unique identifier for the sponsor.
+        name (str): The name of the sponsoring organization.
+        description (Optional[str]): A brief description of the sponsor.
+        url (Optional[str]): Sponsor's website URL.
+        logo_url (Optional[str]): URL to the sponsor's logo.
+        level (Optional[str]): Sponsorship tier (e.g., 'Gold', 'Silver').
+        type (Optional[str]): Type identifier.
+    """
+    id: int
+    name: str
+    description: Optional[str] = None
+    url: Optional[str] = None
+    logo_url: Optional[str] = None
+    level: Optional[str] = None
+    type: Optional[str] = None
+    model_config = ConfigDict(extra='ignore')
+
+
+class SponsorList(BaseModel):
+    """Paginated response containing a list of sponsors."""
+    data: List[Sponsor]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra='ignore')
+
+
+class DiscountCode(BaseModel):
+    """
+    Represents a discount or promo code for event tickets.
+
+    Attributes:
+        id (int): Unique identifier for the discount code.
+        code (str): The actual discount code string.
+        discount_url (Optional[str]): URL for applying the discount.
+        value (Optional[float]): Discount value (amount or percentage).
+        type (Optional[str]): Discount type ('percent' or 'amount').
+        is_active (bool): Whether the code is currently active.
+        tickets_number (Optional[int]): Max tickets this code applies to.
+        min_quantity (Optional[int]): Minimum ticket quantity required.
+        max_quantity (Optional[int]): Maximum ticket quantity allowed.
+        valid_from (Optional[str]): Start of validity period.
+        valid_till (Optional[str]): End of validity period.
+    """
+    id: int
+    code: str
+    discount_url: Optional[str] = None
+    value: Optional[float] = None
+    type: Optional[str] = None
+    is_active: bool = True
+    tickets_number: Optional[int] = None
+    min_quantity: Optional[int] = None
+    max_quantity: Optional[int] = None
+    valid_from: Optional[str] = None
+    valid_till: Optional[str] = None
+    model_config = ConfigDict(extra='ignore')
+
+
+class DiscountCodeList(BaseModel):
+    """Paginated response containing a list of discount codes."""
+    data: List[DiscountCode]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra='ignore')
