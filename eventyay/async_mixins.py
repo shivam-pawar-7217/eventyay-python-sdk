@@ -1,8 +1,10 @@
 from typing import List, Dict, Any, Optional
 from .models import (
     Organizer, OrganizerList,
-    Event, EventList, Attendee, AttendeeList, Speaker, SpeakerList, 
-    Session, SessionList, Ticket, TicketList
+    Event, EventList, Attendee, AttendeeList, Speaker, SpeakerList,
+    Session, SessionList, Ticket, TicketList, Track, TrackList,
+    Microlocation, MicrolocationList, Sponsor, SponsorList,
+    DiscountCode, DiscountCodeList
 )
 
 class AsyncOrganizersMixin:
@@ -366,3 +368,98 @@ class AsyncSessionsMixin:
         response_data = await self._get(f'events/{event_identifier}/sessions/{session_id}')
         return Session(**response_data)
 
+
+class AsyncTracksMixin:
+    """Async methods for Tracks."""
+
+    async def get_event_tracks(
+        self, event_identifier: str,
+        page: int = 1, page_size: int = 10
+    ) -> TrackList:
+        """Retrieves paginated tracks for an event (Async)."""
+        params = {'page': page, 'page_size': page_size}
+        response_data = await self._get(
+            f'events/{event_identifier}/tracks', params=params
+        )
+        return TrackList(**response_data)
+
+    async def get_track(
+        self, event_identifier: str, track_id: str
+    ) -> Track:
+        """Fetches a single track (Async)."""
+        response_data = await self._get(
+            f'events/{event_identifier}/tracks/{track_id}'
+        )
+        return Track(**response_data)
+
+
+class AsyncMicrolocationsMixin:
+    """Async methods for Microlocations."""
+
+    async def get_event_microlocations(
+        self, event_identifier: str,
+        page: int = 1, page_size: int = 10
+    ) -> MicrolocationList:
+        """Retrieves paginated microlocations for an event (Async)."""
+        params = {'page': page, 'page_size': page_size}
+        response_data = await self._get(
+            f'events/{event_identifier}/microlocations', params=params
+        )
+        return MicrolocationList(**response_data)
+
+    async def get_microlocation(
+        self, event_identifier: str, microlocation_id: str
+    ) -> Microlocation:
+        """Fetches a single microlocation (Async)."""
+        response_data = await self._get(
+            f'events/{event_identifier}/microlocations/{microlocation_id}'
+        )
+        return Microlocation(**response_data)
+
+
+class AsyncSponsorsMixin:
+    """Async methods for Sponsors."""
+
+    async def get_event_sponsors(
+        self, event_identifier: str,
+        page: int = 1, page_size: int = 10
+    ) -> SponsorList:
+        """Retrieves paginated sponsors for an event (Async)."""
+        params = {'page': page, 'page_size': page_size}
+        response_data = await self._get(
+            f'events/{event_identifier}/sponsors', params=params
+        )
+        return SponsorList(**response_data)
+
+    async def get_sponsor(
+        self, event_identifier: str, sponsor_id: str
+    ) -> Sponsor:
+        """Fetches a single sponsor (Async)."""
+        response_data = await self._get(
+            f'events/{event_identifier}/sponsors/{sponsor_id}'
+        )
+        return Sponsor(**response_data)
+
+
+class AsyncDiscountCodesMixin:
+    """Async methods for Discount Codes."""
+
+    async def get_event_discount_codes(
+        self, event_identifier: str,
+        page: int = 1, page_size: int = 10
+    ) -> DiscountCodeList:
+        """Retrieves paginated discount codes for an event (Async)."""
+        params = {'page': page, 'page_size': page_size}
+        response_data = await self._get(
+            f'events/{event_identifier}/discount-codes', params=params
+        )
+        return DiscountCodeList(**response_data)
+
+    async def get_discount_code(
+        self, event_identifier: str, code_id: str
+    ) -> DiscountCode:
+        """Fetches a single discount code (Async)."""
+        response_data = await self._get(
+            f'events/{event_identifier}/discount-codes/{code_id}'
+        )
+        return DiscountCode(**response_data)

@@ -8,12 +8,20 @@ from .exceptions import (
 )
 
 from .async_mixins import (
-    AsyncOrganizersMixin, AsyncEventsMixin, 
+    AsyncOrganizersMixin, AsyncEventsMixin,
     AsyncTicketsMixin, AsyncAttendeesMixin, AsyncSpeakersMixin,
-    AsyncSessionsMixin
+    AsyncSessionsMixin, AsyncTracksMixin, AsyncMicrolocationsMixin,
+    AsyncSponsorsMixin, AsyncDiscountCodesMixin
 )
 
-class AsyncEventyayClient(AsyncOrganizersMixin, AsyncEventsMixin, AsyncTicketsMixin, AsyncAttendeesMixin, AsyncSpeakersMixin, AsyncSessionsMixin):
+
+class AsyncEventyayClient(
+    AsyncOrganizersMixin, AsyncEventsMixin,
+    AsyncTicketsMixin, AsyncAttendeesMixin,
+    AsyncSpeakersMixin, AsyncSessionsMixin,
+    AsyncTracksMixin, AsyncMicrolocationsMixin,
+    AsyncSponsorsMixin, AsyncDiscountCodesMixin
+):
     """
     Asynchronous client for the Eventyay API.
     Uses aiohttp for non-blocking I/O.
