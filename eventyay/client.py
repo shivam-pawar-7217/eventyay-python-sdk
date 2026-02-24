@@ -15,7 +15,7 @@ from .exceptions import (
     EventyayValidationError,
     EventyayConnectionError,
     EventyayTimeoutError,
-    EventyayRateLimitError
+    EventyayRateLimitError,
 )
 
 
@@ -29,15 +29,27 @@ from .tracks import TracksMixin
 from .microlocations import MicrolocationsMixin
 from .sponsors import SponsorsMixin
 from .discount_codes import DiscountCodesMixin
+from .orders import OrdersMixin
+from .tax import TaxMixin
 
 
-class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
-                     AttendeesMixin, SpeakersMixin, SessionsMixin,
-                     TracksMixin, MicrolocationsMixin, SponsorsMixin,
-                     DiscountCodesMixin):
+class EventyayClient(
+    OrganizersMixin,
+    EventsMixin,
+    TicketsMixin,
+    AttendeesMixin,
+    SpeakersMixin,
+    SessionsMixin,
+    TracksMixin,
+    MicrolocationsMixin,
+    SponsorsMixin,
+    DiscountCodesMixin,
+    OrdersMixin,
+    TaxMixin,
+):
     """
     The primary entry point for interacting with the Eventyay REST API.
-    
+
     This client combines multiple mixins to provide a unified interface for
     managing organizers, events, tickets, and more. It handles authentication,
     retries, and error mapping automatically.
@@ -45,7 +57,7 @@ class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
     Example:
         ```python
         from eventyay import EventyayClient
-        
+
         client = EventyayClient(api_key="your_api_key")
         events = client.get_events()
         for event in events.data:
@@ -57,11 +69,11 @@ class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
         api_key (Optional[str]): Your Eventyay API key for authenticated requests.
         session (requests.Session): The underlying requests session with retry logic.
     """
-    
+
     def __init__(
         self,
         base_url: str = "https://dev.eventyay.com/api/v1",
-        api_key: Optional[str] = None
+        api_key: Optional[str] = None,
     ):
         """
         Initializes the EventyayClient.
@@ -70,49 +82,50 @@ class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
             base_url (str, optional): The API base URL. Defaults to the development server.
             api_key (str, optional): Your API key. If omitted, only public endpoints work.
         """
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.session = requests.Session()
-        
+
         # Configure Retries (Reliability)
         retry_strategy = Retry(
             total=3,
-            backoff_factor=1, # 1s, 2s, 4s
+            backoff_factor=1,  # 1s, 2s, 4s
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET", "OPTIONS", "POST", "PATCH", "DELETE"]
+            allowed_methods=["HEAD", "GET", "OPTIONS", "POST", "PATCH", "DELETE"],
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
         self.session.mount("http://", adapter)
-        
+
         # Set up authentication header if API key is provided
         if api_key:
-            self.session.headers['Authorization'] = f'Token {api_key}'
-        
+            self.session.headers["Authorization"] = f"Token {api_key}"
+
         # Set default headers
-        self.session.headers.update({
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        })
-    
-    def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        self.session.headers.update(
+            {"Content-Type": "application/json", "Accept": "application/json"}
+        )
+
+    def _get(
+        self, endpoint: str, params: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """
         Performs a GET request to a specified endpoint.
-        
+
         Args:
             endpoint (str): The API endpoint path (e.g., 'events').
             params (dict, optional): Query parameters to include.
-            
+
         Returns:
             Dict[str, Any]: The parsed JSON response data.
-            
+
         Raises:
             EventyayAPIError: If the request fails or the server returns an error.
             EventyayAuthenticationError: If the API key is missing or invalid.
             EventyayNotFoundError: If the requested resource does not exist.
         """
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        
+
         try:
             response = self.session.get(url, params=params)
             response.raise_for_status()
@@ -120,13 +133,17 @@ class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
         except requests.exceptions.HTTPError as e:
             self._handle_error(e.response)
         except requests.exceptions.ConnectionError:
-            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
+            raise EventyayConnectionError(
+                "Could not connect to the Eventyay API. Please check your internet connection."
+            )
         except requests.exceptions.Timeout:
             raise EventyayTimeoutError("The request to the Eventyay API timed out.")
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
-    
-    def _post(self, endpoint: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+
+    def _post(
+        self, endpoint: str, json: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """
         Performs a POST request to a specified endpoint.
 
@@ -138,7 +155,7 @@ class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
             Dict[str, Any]: The parsed JSON response data.
         """
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        
+
         try:
             response = self.session.post(url, json=json)
             response.raise_for_status()
@@ -146,13 +163,17 @@ class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
         except requests.exceptions.HTTPError as e:
             self._handle_error(e.response)
         except requests.exceptions.ConnectionError:
-            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
+            raise EventyayConnectionError(
+                "Could not connect to the Eventyay API. Please check your internet connection."
+            )
         except requests.exceptions.Timeout:
             raise EventyayTimeoutError("The request to the Eventyay API timed out.")
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
 
-    def _patch(self, endpoint: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _patch(
+        self, endpoint: str, json: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         """
         Performs a PATCH request to a specified endpoint.
 
@@ -164,7 +185,7 @@ class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
             Dict[str, Any]: The parsed JSON response data.
         """
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        
+
         try:
             response = self.session.patch(url, json=json)
             response.raise_for_status()
@@ -172,12 +193,14 @@ class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
         except requests.exceptions.HTTPError as e:
             self._handle_error(e.response)
         except requests.exceptions.ConnectionError:
-            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
+            raise EventyayConnectionError(
+                "Could not connect to the Eventyay API. Please check your internet connection."
+            )
         except requests.exceptions.Timeout:
             raise EventyayTimeoutError("The request to the Eventyay API timed out.")
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
-    
+
     def _delete(self, endpoint: str) -> None:
         """
         Performs a DELETE request to a specified endpoint.
@@ -189,7 +212,7 @@ class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
             EventyayAPIError: If deletion fails.
         """
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
-        
+
         try:
             response = self.session.delete(url)
             # 204 No Content is common for delete
@@ -199,35 +222,41 @@ class EventyayClient(OrganizersMixin, EventsMixin, TicketsMixin,
         except requests.exceptions.HTTPError as e:
             self._handle_error(e.response)
         except requests.exceptions.ConnectionError:
-            raise EventyayConnectionError("Could not connect to the Eventyay API. Please check your internet connection.")
+            raise EventyayConnectionError(
+                "Could not connect to the Eventyay API. Please check your internet connection."
+            )
         except requests.exceptions.Timeout:
             raise EventyayTimeoutError("The request to the Eventyay API timed out.")
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
-    
+
     def _handle_error(self, response: requests.Response) -> None:
         """
         Maps HTTP error responses to SDK-specific exceptions.
-        
+
         Args:
             response (requests.Response): The failing response object.
         """
         status_code = response.status_code
-        
+
         try:
             error_data = response.json()
-            error_message = error_data.get('detail') or error_data.get('message') or str(error_data)
+            error_message = (
+                error_data.get("detail") or error_data.get("message") or str(error_data)
+            )
         except ValueError:
             error_message = response.text or f"HTTP {status_code} error"
-        
+
         if status_code == 401 or status_code == 403:
             raise EventyayAuthenticationError(error_message)
         if status_code == 404:
             raise EventyayNotFoundError(error_message)
-            
+
         if status_code == 429:
-            raise EventyayRateLimitError(f"Rate limit exceeded. Try again later. {error_message}")
-            
+            raise EventyayRateLimitError(
+                f"Rate limit exceeded. Try again later. {error_message}"
+            )
+
         if 400 <= status_code < 500:
             raise EventyayValidationError(error_message)
         else:

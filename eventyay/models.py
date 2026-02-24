@@ -1,6 +1,7 @@
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, ConfigDict
 
+
 class Organizer(BaseModel):
     """
     Represents an organization or individual hosting events on Eventyay.
@@ -12,17 +13,19 @@ class Organizer(BaseModel):
         url (Optional[str]): Official website link.
         logo_url (Optional[str]): URL to the organizer's logo image.
     """
+
     id: int
     name: str
     description: Optional[str] = None
     url: Optional[str] = None
     logo_url: Optional[str] = None
-    
+
     # Allow extra fields to prevent errors if API adds new fields
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
 
     def __str__(self):
         return f"Organizer(id={self.id}, name='{self.name}')"
+
 
 class Event(BaseModel):
     """
@@ -39,6 +42,7 @@ class Event(BaseModel):
         location_name (Optional[str]): Physical location or venue name.
         online (bool): Whether the event is accessible remotely.
     """
+
     id: int
     name: str
     identifier: str
@@ -48,11 +52,12 @@ class Event(BaseModel):
     privacy: Optional[str] = "public"
     location_name: Optional[str] = None
     online: bool = False
-    
-    model_config = ConfigDict(extra='ignore')
+
+    model_config = ConfigDict(extra="ignore")
 
     def __str__(self):
         return f"Event(id={self.id}, name='{self.name}', date={self.starts_at})"
+
 
 class Attendee(BaseModel):
     """
@@ -65,12 +70,14 @@ class Attendee(BaseModel):
         lastname (Optional[str]): Last name.
         isCheckedIn (bool): Ticket check-in status.
     """
+
     id: int
     email: Optional[str] = None
     firstname: Optional[str] = None
     lastname: Optional[str] = None
     isCheckedIn: bool = False
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class Speaker(BaseModel):
     """
@@ -83,12 +90,14 @@ class Speaker(BaseModel):
         photo_url (Optional[str]): Link to speaker's profile photo.
         short_biography (Optional[str]): A brief bio.
     """
+
     id: int
     name: str
     email: Optional[str] = None
     photo_url: Optional[str] = None
     short_biography: Optional[str] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class Session(BaseModel):
     """
@@ -101,48 +110,60 @@ class Session(BaseModel):
         starts_at (Optional[str]): Session start time.
         ends_at (Optional[str]): Session end time.
     """
+
     id: int
     title: str
     description: Optional[str] = None
     starts_at: Optional[str] = None
     ends_at: Optional[str] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 # Response Wrappers for Pagination
 class OrganizerList(BaseModel):
     """Paginated response containing a list of organizers."""
+
     data: List[Organizer]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class EventList(BaseModel):
     """Paginated response containing a list of events."""
+
     data: List[Event]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class AttendeeList(BaseModel):
     """Paginated response containing a list of attendees."""
+
     data: List[Attendee]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class SpeakerList(BaseModel):
     """Paginated response containing a list of speakers."""
+
     data: List[Speaker]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class SessionList(BaseModel):
     """Paginated response containing a list of sessions."""
+
     data: List[Session]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class Track(BaseModel):
     """
@@ -155,12 +176,14 @@ class Track(BaseModel):
         color (Optional[str]): Background color code for UI elements.
         font_color (Optional[str]): Font color code for UI elements.
     """
+
     id: int
     name: str
     description: Optional[str] = None
     color: Optional[str] = None
     font_color: Optional[str] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class Microlocation(BaseModel):
     """
@@ -174,27 +197,33 @@ class Microlocation(BaseModel):
         floor (Optional[int]): Floor level within the building.
         room (Optional[str]): Room number or identifier.
     """
+
     id: int
     name: str
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     floor: Optional[int] = None
     room: Optional[str] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class TrackList(BaseModel):
     """Paginated response containing a list of tracks."""
+
     data: List[Track]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class MicrolocationList(BaseModel):
     """Paginated response containing a list of microlocations."""
+
     data: List[Microlocation]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
 
 class Ticket(BaseModel):
     """
@@ -211,6 +240,7 @@ class Ticket(BaseModel):
         sales_ends_at (Optional[str]): When ticket sales end.
         is_hidden (bool): Whether the ticket is hidden from the public event page.
     """
+
     id: int
     name: str
     description: Optional[str] = None
@@ -220,19 +250,21 @@ class Ticket(BaseModel):
     sales_starts_at: Optional[str] = None
     sales_ends_at: Optional[str] = None
     is_hidden: bool = False
-    
-    model_config = ConfigDict(extra='ignore')
+
+    model_config = ConfigDict(extra="ignore")
 
     def __str__(self):
-        type_str = f" - ${self.price}" if self.type == 'paid' else f" - {self.type}"
+        type_str = f" - ${self.price}" if self.type == "paid" else f" - {self.type}"
         return f"Ticket(id={self.id}, name='{self.name}'{type_str})"
+
 
 class TicketList(BaseModel):
     """Paginated response containing a list of tickets."""
+
     data: List[Ticket]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
 
 
 class Sponsor(BaseModel):
@@ -248,6 +280,7 @@ class Sponsor(BaseModel):
         level (Optional[str]): Sponsorship tier (e.g., 'Gold', 'Silver').
         type (Optional[str]): Type identifier.
     """
+
     id: int
     name: str
     description: Optional[str] = None
@@ -255,15 +288,16 @@ class Sponsor(BaseModel):
     logo_url: Optional[str] = None
     level: Optional[str] = None
     type: Optional[str] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
 
 
 class SponsorList(BaseModel):
     """Paginated response containing a list of sponsors."""
+
     data: List[Sponsor]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
 
 
 class DiscountCode(BaseModel):
@@ -283,6 +317,7 @@ class DiscountCode(BaseModel):
         valid_from (Optional[str]): Start of validity period.
         valid_till (Optional[str]): End of validity period.
     """
+
     id: int
     code: str
     discount_url: Optional[str] = None
@@ -294,12 +329,72 @@ class DiscountCode(BaseModel):
     max_quantity: Optional[int] = None
     valid_from: Optional[str] = None
     valid_till: Optional[str] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
 
 
 class DiscountCodeList(BaseModel):
     """Paginated response containing a list of discount codes."""
+
     data: List[DiscountCode]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
-    model_config = ConfigDict(extra='ignore')
+    model_config = ConfigDict(extra="ignore")
+
+
+class Order(BaseModel):
+    """
+    Represents an order (ticket purchase) for an event.
+
+    Attributes:
+        id (int): Unique identifier for the order.
+        identifier (Optional[str]): Human-readable order identifier.
+        status (Optional[str]): Order status (e.g., 'completed', 'pending', 'placed').
+        amount (Optional[float]): Total order amount.
+        paid_via (Optional[str]): Payment method used (e.g., 'stripe', 'free').
+        created_at (Optional[str]): Order creation timestamp.
+        completed_at (Optional[str]): Order completion timestamp.
+    """
+
+    id: int
+    identifier: Optional[str] = None
+    status: Optional[str] = None
+    amount: Optional[float] = None
+    paid_via: Optional[str] = None
+    created_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"Order(id={self.id}, identifier='{self.identifier}', status='{self.status}')"
+
+
+class OrderList(BaseModel):
+    """Paginated response containing a list of orders."""
+
+    data: List[Order]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class Tax(BaseModel):
+    """
+    Represents tax configuration for an event.
+
+    Attributes:
+        id (int): Unique identifier for the tax record.
+        name (Optional[str]): Name of the tax (e.g., 'GST', 'VAT').
+        rate (Optional[float]): Tax rate as a percentage.
+        is_tax_included_in_price (bool): Whether the ticket price already includes tax.
+        country (Optional[str]): Country code for the tax jurisdiction.
+    """
+
+    id: int
+    name: Optional[str] = None
+    rate: Optional[float] = None
+    is_tax_included_in_price: bool = False
+    country: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"Tax(id={self.id}, name='{self.name}', rate={self.rate}%)"
