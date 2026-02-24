@@ -9,8 +9,7 @@ class DiscountCodesMixin:
     """
 
     def get_event_discount_codes(
-        self, event_identifier: str,
-        page: int = 1, page_size: int = 10
+        self, event_identifier: str, page: int = 1, page_size: int = 10
     ) -> DiscountCodeList:
         """
         Retrieves discount codes available for a specific event.
@@ -23,18 +22,13 @@ class DiscountCodesMixin:
         Returns:
             DiscountCodeList: Paginated list of discount codes.
         """
-        params = {
-            'page': page,
-            'page_size': page_size
-        }
+        params = {"page": page, "page_size": page_size}
         response_data = self._get(
-            f'events/{event_identifier}/discount-codes', params=params
+            f"events/{event_identifier}/discount-codes", params=params
         )
         return DiscountCodeList(**response_data)
 
-    def get_discount_code(
-        self, event_identifier: str, code_id: str
-    ) -> DiscountCode:
+    def get_discount_code(self, event_identifier: str, code_id: str) -> DiscountCode:
         """
         Fetches details for a single discount code.
 
@@ -45,7 +39,5 @@ class DiscountCodesMixin:
         Returns:
             DiscountCode: The detailed DiscountCode object.
         """
-        response_data = self._get(
-            f'events/{event_identifier}/discount-codes/{code_id}'
-        )
+        response_data = self._get(f"events/{event_identifier}/discount-codes/{code_id}")
         return DiscountCode(**response_data)

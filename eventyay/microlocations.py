@@ -9,8 +9,7 @@ class MicrolocationsMixin:
     """
 
     def get_event_microlocations(
-        self, event_identifier: str,
-        page: int = 1, page_size: int = 10
+        self, event_identifier: str, page: int = 1, page_size: int = 10
     ) -> MicrolocationList:
         """
         Retrieves a paginated list of microlocations for a specific event.
@@ -23,12 +22,9 @@ class MicrolocationsMixin:
         Returns:
             MicrolocationList: Paginated list of microlocations.
         """
-        params = {
-            'page': page,
-            'page_size': page_size
-        }
+        params = {"page": page, "page_size": page_size}
         response_data = self._get(
-            f'events/{event_identifier}/microlocations', params=params
+            f"events/{event_identifier}/microlocations", params=params
         )
         return MicrolocationList(**response_data)
 
@@ -46,6 +42,6 @@ class MicrolocationsMixin:
             Microlocation: The detailed Microlocation object.
         """
         response_data = self._get(
-            f'events/{event_identifier}/microlocations/{microlocation_id}'
+            f"events/{event_identifier}/microlocations/{microlocation_id}"
         )
         return Microlocation(**response_data)

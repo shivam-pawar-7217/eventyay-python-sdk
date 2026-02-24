@@ -13,24 +13,19 @@ class TestMicrolocationsAPI(unittest.TestCase):
             "latitude": 52.5200,
             "longitude": 13.4050,
             "floor": 1,
-            "room": "A101"
+            "room": "A101",
         }
 
-    @patch('eventyay.client.requests.Session.get')
+    @patch("eventyay.client.requests.Session.get")
     def test_get_event_microlocations(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "data": [
                 self.mock_microlocation_data,
-                {
-                    "id": 2,
-                    "name": "Workshop Room B",
-                    "floor": 2,
-                    "room": "B201"
-                }
+                {"id": 2, "name": "Workshop Room B", "floor": 2, "room": "B201"},
             ],
-            "meta": {"total": 2}
+            "meta": {"total": 2},
         }
         mock_get.return_value = mock_response
 
@@ -48,12 +43,11 @@ class TestMicrolocationsAPI(unittest.TestCase):
         self.assertEqual(first.floor, 1)
 
         mock_get.assert_called_once_with(
-            "https://dev.eventyay.com/api/v1/"
-            "events/test-event/microlocations",
-            params={'page': 1, 'page_size': 10}
+            "https://dev.eventyay.com/api/v1/" "events/test-event/microlocations",
+            params={"page": 1, "page_size": 10},
         )
 
-    @patch('eventyay.client.requests.Session.get')
+    @patch("eventyay.client.requests.Session.get")
     def test_get_microlocation(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
@@ -68,11 +62,10 @@ class TestMicrolocationsAPI(unittest.TestCase):
         self.assertEqual(result.room, "A101")
 
         mock_get.assert_called_once_with(
-            "https://dev.eventyay.com/api/v1/"
-            "events/test-event/microlocations/1",
-            params=None
+            "https://dev.eventyay.com/api/v1/" "events/test-event/microlocations/1",
+            params=None,
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

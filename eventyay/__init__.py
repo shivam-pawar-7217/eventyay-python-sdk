@@ -14,7 +14,7 @@ from .exceptions import (
     EventyayAPIError,
     EventyayAuthenticationError,
     EventyayNotFoundError,
-    EventyayValidationError
+    EventyayValidationError,
 )
 
 __all__ = [

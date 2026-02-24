@@ -9,8 +9,7 @@ class SponsorsMixin:
     """
 
     def get_event_sponsors(
-        self, event_identifier: str,
-        page: int = 1, page_size: int = 10
+        self, event_identifier: str, page: int = 1, page_size: int = 10
     ) -> SponsorList:
         """
         Retrieves a paginated list of sponsors for a specific event.
@@ -23,18 +22,11 @@ class SponsorsMixin:
         Returns:
             SponsorList: Paginated list of sponsors.
         """
-        params = {
-            'page': page,
-            'page_size': page_size
-        }
-        response_data = self._get(
-            f'events/{event_identifier}/sponsors', params=params
-        )
+        params = {"page": page, "page_size": page_size}
+        response_data = self._get(f"events/{event_identifier}/sponsors", params=params)
         return SponsorList(**response_data)
 
-    def get_sponsor(
-        self, event_identifier: str, sponsor_id: str
-    ) -> Sponsor:
+    def get_sponsor(self, event_identifier: str, sponsor_id: str) -> Sponsor:
         """
         Fetches details for a single specific sponsor.
 
@@ -45,7 +37,5 @@ class SponsorsMixin:
         Returns:
             Sponsor: The detailed Sponsor object.
         """
-        response_data = self._get(
-            f'events/{event_identifier}/sponsors/{sponsor_id}'
-        )
+        response_data = self._get(f"events/{event_identifier}/sponsors/{sponsor_id}")
         return Sponsor(**response_data)

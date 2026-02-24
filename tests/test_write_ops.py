@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import Mock, MagicMock
 from eventyay.client import EventyayClient
 
+
 class TestWriteOperations(unittest.TestCase):
     def setUp(self):
         self.client = EventyayClient(api_key="test-key")
@@ -23,7 +24,7 @@ class TestWriteOperations(unittest.TestCase):
         self.client.session.post.assert_called_once()
         args, kwargs = self.client.session.post.call_args
         self.assertTrue(args[0].endswith("organizers"))
-        self.assertEqual(kwargs['json']['name'], name)
+        self.assertEqual(kwargs["json"]["name"], name)
         self.assertEqual(result.id, 1)
 
     def test_update_organizer(self):
@@ -43,7 +44,7 @@ class TestWriteOperations(unittest.TestCase):
         self.client.session.patch.assert_called_once()
         args, kwargs = self.client.session.patch.call_args
         self.assertTrue(args[0].endswith(f"organizers/{org_id}"))
-        self.assertEqual(kwargs['json']['name'], new_name)
+        self.assertEqual(kwargs["json"]["name"], new_name)
         self.assertEqual(result.name, new_name)
 
     def test_delete_organizer(self):
@@ -71,7 +72,7 @@ class TestWriteOperations(unittest.TestCase):
             "id": 101,
             "name": name,
             "identifier": identifier,
-            "starts_at": starts_at
+            "starts_at": starts_at,
         }
         mock_response = Mock()
         mock_response.json.return_value = expected_response
@@ -84,16 +85,16 @@ class TestWriteOperations(unittest.TestCase):
             identifier=identifier,
             starts_at=starts_at,
             ends_at=ends_at,
-            timezone=timezone
+            timezone=timezone,
         )
 
         # Assert
         self.client.session.post.assert_called_once()
         args, kwargs = self.client.session.post.call_args
         self.assertTrue(args[0].endswith("events"))
-        self.assertEqual(kwargs['json']['identifier'], identifier)
+        self.assertEqual(kwargs["json"]["identifier"], identifier)
         self.assertEqual(result.id, 101)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

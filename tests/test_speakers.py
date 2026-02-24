@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 from eventyay.client import EventyayClient
 from eventyay.models import Speaker
 
+
 class TestSpeakersAPI(unittest.TestCase):
     def setUp(self):
         self.client = EventyayClient(api_key="test_key")
@@ -11,10 +12,10 @@ class TestSpeakersAPI(unittest.TestCase):
             "name": "Jane Doe",
             "email": "jane@example.com",
             "photo_url": "https://example.com/photo.jpg",
-            "short_biography": "Software Engineer"
+            "short_biography": "Software Engineer",
         }
-    
-    @patch('eventyay.client.requests.Session.get')
+
+    @patch("eventyay.client.requests.Session.get")
     def test_get_speaker(self, mock_get):
         # Mock the API response
         mock_response = Mock()
@@ -33,9 +34,9 @@ class TestSpeakersAPI(unittest.TestCase):
 
         # Verify the correct URL was called
         mock_get.assert_called_once_with(
-            "https://dev.eventyay.com/api/v1/events/test-event/speakers/1", 
-            params=None
+            "https://dev.eventyay.com/api/v1/events/test-event/speakers/1", params=None
         )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

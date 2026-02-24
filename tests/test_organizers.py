@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import Mock, MagicMock
 from eventyay.client import EventyayClient
 
+
 class TestOrganizers(unittest.TestCase):
     def setUp(self):
         # Create a real client but mock the internal session to avoid network calls
@@ -12,7 +13,7 @@ class TestOrganizers(unittest.TestCase):
         # Arrange
         organizer_id = "1"
         expected_response = {"id": 1, "name": "Test Organizer"}
-        
+
         # Mock the response object
         mock_response = Mock()
         mock_response.json.return_value = expected_response
@@ -27,15 +28,20 @@ class TestOrganizers(unittest.TestCase):
         self.client.session.get.assert_called_once()
         args, kwargs = self.client.session.get.call_args
         self.assertTrue(args[0].endswith("organizers/1"))
-        self.assertEqual(result.id, expected_response['id'])
-        self.assertEqual(result.name, expected_response['name'])
+        self.assertEqual(result.id, expected_response["id"])
+        self.assertEqual(result.name, expected_response["name"])
 
     def test_get_organizer_events(self):
         # Arrange
         organizer_id = "1"
         # API now returns {data: [...]} for pagination wrappers
-        expected_response = {"data": [{"id": 101, "name": "Event 1", "identifier": "event1"}, {"id": 102, "name": "Event 2", "identifier": "event2"}]}
-        
+        expected_response = {
+            "data": [
+                {"id": 101, "name": "Event 1", "identifier": "event1"},
+                {"id": 102, "name": "Event 2", "identifier": "event2"},
+            ]
+        }
+
         # Mock the response object
         mock_response = Mock()
         mock_response.json.return_value = expected_response
@@ -51,7 +57,8 @@ class TestOrganizers(unittest.TestCase):
         args, kwargs = self.client.session.get.call_args
         self.assertTrue(args[0].endswith("organizers/1/events"))
         self.assertEqual(len(result.data), 2)
-        self.assertEqual(result.data[0].id, expected_response['data'][0]['id'])
+        self.assertEqual(result.data[0].id, expected_response["data"][0]["id"])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

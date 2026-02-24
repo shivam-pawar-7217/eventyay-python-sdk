@@ -14,29 +14,23 @@ class TestSponsorsAPI(unittest.TestCase):
             "url": "https://techcorp.example.com",
             "logo_url": "https://techcorp.example.com/logo.png",
             "level": "Gold",
-            "type": "sponsor"
+            "type": "sponsor",
         }
 
-    @patch('eventyay.client.requests.Session.get')
+    @patch("eventyay.client.requests.Session.get")
     def test_get_event_sponsors(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "data": [
                 self.mock_sponsor_data,
-                {
-                    "id": 2,
-                    "name": "DevTools Ltd.",
-                    "level": "Silver"
-                }
+                {"id": 2, "name": "DevTools Ltd.", "level": "Silver"},
             ],
-            "meta": {"total": 2}
+            "meta": {"total": 2},
         }
         mock_get.return_value = mock_response
 
-        result = self.client.get_event_sponsors(
-            "test-event", page=1, page_size=10
-        )
+        result = self.client.get_event_sponsors("test-event", page=1, page_size=10)
 
         self.assertIsInstance(result, SponsorList)
         self.assertEqual(len(result.data), 2)
@@ -48,12 +42,11 @@ class TestSponsorsAPI(unittest.TestCase):
         self.assertEqual(first.level, "Gold")
 
         mock_get.assert_called_once_with(
-            "https://dev.eventyay.com/api/v1/"
-            "events/test-event/sponsors",
-            params={'page': 1, 'page_size': 10}
+            "https://dev.eventyay.com/api/v1/" "events/test-event/sponsors",
+            params={"page": 1, "page_size": 10},
         )
 
-    @patch('eventyay.client.requests.Session.get')
+    @patch("eventyay.client.requests.Session.get")
     def test_get_sponsor(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
@@ -68,11 +61,10 @@ class TestSponsorsAPI(unittest.TestCase):
         self.assertEqual(result.url, "https://techcorp.example.com")
 
         mock_get.assert_called_once_with(
-            "https://dev.eventyay.com/api/v1/"
-            "events/test-event/sponsors/1",
-            params=None
+            "https://dev.eventyay.com/api/v1/" "events/test-event/sponsors/1",
+            params=None,
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

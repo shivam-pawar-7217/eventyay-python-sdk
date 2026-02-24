@@ -18,10 +18,10 @@ class TestDiscountCodesAPI(unittest.TestCase):
             "min_quantity": 1,
             "max_quantity": 10,
             "valid_from": "2026-01-01T00:00:00Z",
-            "valid_till": "2026-06-01T00:00:00Z"
+            "valid_till": "2026-06-01T00:00:00Z",
         }
 
-    @patch('eventyay.client.requests.Session.get')
+    @patch("eventyay.client.requests.Session.get")
     def test_get_event_discount_codes(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
@@ -33,10 +33,10 @@ class TestDiscountCodesAPI(unittest.TestCase):
                     "code": "VIP50",
                     "value": 50.0,
                     "type": "percent",
-                    "is_active": True
-                }
+                    "is_active": True,
+                },
             ],
-            "meta": {"total": 2}
+            "meta": {"total": 2},
         }
         mock_get.return_value = mock_response
 
@@ -55,12 +55,11 @@ class TestDiscountCodesAPI(unittest.TestCase):
         self.assertTrue(first.is_active)
 
         mock_get.assert_called_once_with(
-            "https://dev.eventyay.com/api/v1/"
-            "events/test-event/discount-codes",
-            params={'page': 1, 'page_size': 10}
+            "https://dev.eventyay.com/api/v1/" "events/test-event/discount-codes",
+            params={"page": 1, "page_size": 10},
         )
 
-    @patch('eventyay.client.requests.Session.get')
+    @patch("eventyay.client.requests.Session.get")
     def test_get_discount_code(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
@@ -75,11 +74,10 @@ class TestDiscountCodesAPI(unittest.TestCase):
         self.assertEqual(result.type, "percent")
 
         mock_get.assert_called_once_with(
-            "https://dev.eventyay.com/api/v1/"
-            "events/test-event/discount-codes/1",
-            params=None
+            "https://dev.eventyay.com/api/v1/" "events/test-event/discount-codes/1",
+            params=None,
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
