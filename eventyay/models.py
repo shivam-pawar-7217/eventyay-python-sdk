@@ -372,6 +372,201 @@ class OrderList(BaseModel):
     """Paginated response containing a list of orders."""
 
     data: List[Order]
+    id: int
+    name: str
+    description: Optional[str] = None
+    color: Optional[str] = None
+    font_color: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class Microlocation(BaseModel):
+    """
+    Represents a specific physical location or room within an event venue.
+
+    Attributes:
+        id (int): Unique identifier for the microlocation.
+        name (str): Name of the room/location (e.g. 'Main Hall', 'Room A').
+        latitude (Optional[float]): Geographic coordinate.
+        longitude (Optional[float]): Geographic coordinate.
+        floor (Optional[int]): Floor level within the building.
+        room (Optional[str]): Room number or identifier.
+    """
+
+    id: int
+    name: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    floor: Optional[int] = None
+    room: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class TrackList(BaseModel):
+    """Paginated response containing a list of tracks."""
+
+    data: List[Track]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class MicrolocationList(BaseModel):
+    """Paginated response containing a list of microlocations."""
+
+    data: List[Microlocation]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class Ticket(BaseModel):
+    """
+    Represents a ticket type available for an event.
+
+    Attributes:
+        id (int): Unique identifier for the ticket.
+        name (str): Name of the ticket (e.g., 'General Admission', 'VIP').
+        description (Optional[str]): Description of what the ticket includes.
+        type (Optional[str]): Type of ticket (e.g., 'free', 'paid', 'donation').
+        price (Optional[float]): Price of the ticket.
+        quantity (Optional[int]): Total number of tickets available.
+        sales_starts_at (Optional[str]): When ticket sales begin.
+        sales_ends_at (Optional[str]): When ticket sales end.
+        is_hidden (bool): Whether the ticket is hidden from the public event page.
+    """
+
+    id: int
+    name: str
+    description: Optional[str] = None
+    type: Optional[str] = None
+    price: Optional[float] = None
+    quantity: Optional[int] = None
+    sales_starts_at: Optional[str] = None
+    sales_ends_at: Optional[str] = None
+    is_hidden: bool = False
+
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        type_str = f" - ${self.price}" if self.type == "paid" else f" - {self.type}"
+        return f"Ticket(id={self.id}, name='{self.name}'{type_str})"
+
+
+class TicketList(BaseModel):
+    """Paginated response containing a list of tickets."""
+
+    data: List[Ticket]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class Sponsor(BaseModel):
+    """
+    Represents a sponsor for an event.
+
+    Attributes:
+        id (int): Unique identifier for the sponsor.
+        name (str): The name of the sponsoring organization.
+        description (Optional[str]): A brief description of the sponsor.
+        url (Optional[str]): Sponsor's website URL.
+        logo_url (Optional[str]): URL to the sponsor's logo.
+        level (Optional[str]): Sponsorship tier (e.g., 'Gold', 'Silver').
+        type (Optional[str]): Type identifier.
+    """
+
+    id: int
+    name: str
+    description: Optional[str] = None
+    url: Optional[str] = None
+    logo_url: Optional[str] = None
+    level: Optional[str] = None
+    type: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class SponsorList(BaseModel):
+    """Paginated response containing a list of sponsors."""
+
+    data: List[Sponsor]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class DiscountCode(BaseModel):
+    """
+    Represents a discount or promo code for event tickets.
+
+    Attributes:
+        id (int): Unique identifier for the discount code.
+        code (str): The actual discount code string.
+        discount_url (Optional[str]): URL for applying the discount.
+        value (Optional[float]): Discount value (amount or percentage).
+        type (Optional[str]): Discount type ('percent' or 'amount').
+        is_active (bool): Whether the code is currently active.
+        tickets_number (Optional[int]): Max tickets this code applies to.
+        min_quantity (Optional[int]): Minimum ticket quantity required.
+        max_quantity (Optional[int]): Maximum ticket quantity allowed.
+        valid_from (Optional[str]): Start of validity period.
+        valid_till (Optional[str]): End of validity period.
+    """
+
+    id: int
+    code: str
+    discount_url: Optional[str] = None
+    value: Optional[float] = None
+    type: Optional[str] = None
+    is_active: bool = True
+    tickets_number: Optional[int] = None
+    min_quantity: Optional[int] = None
+    max_quantity: Optional[int] = None
+    valid_from: Optional[str] = None
+    valid_till: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class DiscountCodeList(BaseModel):
+    """Paginated response containing a list of discount codes."""
+
+    data: List[DiscountCode]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class Order(BaseModel):
+    """
+    Represents an order (ticket purchase) for an event.
+
+    Attributes:
+        id (int): Unique identifier for the order.
+        identifier (Optional[str]): Human-readable order identifier.
+        status (Optional[str]): Order status (e.g., 'completed', 'pending', 'placed').
+        amount (Optional[float]): Total order amount.
+        paid_via (Optional[str]): Payment method used (e.g., 'stripe', 'free').
+        created_at (Optional[str]): Order creation timestamp.
+        completed_at (Optional[str]): Order completion timestamp.
+    """
+
+    id: int
+    identifier: Optional[str] = None
+    status: Optional[str] = None
+    amount: Optional[float] = None
+    paid_via: Optional[str] = None
+    created_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"Order(id={self.id}, identifier='{self.identifier}', status='{self.status}')"
+
+
+class OrderList(BaseModel):
+    """Paginated response containing a list of orders."""
+
+    data: List[Order]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra="ignore")
@@ -398,3 +593,67 @@ class Tax(BaseModel):
 
     def __str__(self):
         return f"Tax(id={self.id}, name='{self.name}', rate={self.rate}%)"
+
+
+class User(BaseModel):
+    """
+    Represents a user profile on the Eventyay platform.
+
+    Attributes:
+        id (int): Unique identifier for the user.
+        email (Optional[str]): Primary email address.
+        first_name (Optional[str]): First name of the user.
+        last_name (Optional[str]): Last name of the user.
+        details (Optional[str]): Bio or extra details.
+        contact (Optional[str]): Contact number or details.
+        avatar_url (Optional[str]): Profile picture URL.
+    """
+
+    id: int
+    email: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    details: Optional[str] = None
+    contact: Optional[str] = None
+    avatar_url: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"User(id={self.id}, email='{self.email}')"
+
+
+class UserList(BaseModel):
+    """Paginated response containing a list of users."""
+
+    data: List[User]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class Role(BaseModel):
+    """
+    Represents a role assigned to users (e.g., admin, co-organizer, volunteer).
+
+    Attributes:
+        id (int): Unique identifier for the role.
+        name (str): The name/title of the role.
+        title_name (Optional[str]): Human-readable title name.
+    """
+
+    id: int
+    name: str
+    title_name: Optional[str] = None
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"Role(id={self.id}, name='{self.name}')"
+
+
+class RoleList(BaseModel):
+    """Paginated response containing a list of roles."""
+
+    data: List[Role]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
