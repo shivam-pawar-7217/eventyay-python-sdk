@@ -23,6 +23,8 @@ from eventyay.models import (
     DiscountCodeList,
     User,
     UserList,
+    Role,
+    RoleList,
 )
 
 
@@ -432,6 +434,48 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(user, User)
         self.assertEqual(user.id, 1)
         self.assertEqual(user.email, "async@test.com")
+
+    # --- Roles API ---
+
+    @patch("aiohttp.ClientSession.request")
+    async def test_get_event_roles(self, mock_request):
+        mock_response = AsyncMock()
+        mock_response.status = 200
+        mock_response.json.return_value = {
+            "data": [
+                {"id": 1, "name": "organizer"},
+                {"id": 2, "name": "coorganizer"},
+            ],
+            "links": {"next": None},
+        }
+        mock_request.return_value.__aenter__.return_value = mock_response
+
+        async with AsyncEventyayClient(api_key="test") as client:
+            roles = await client.get_event_roles("event-1")
+
+        self.assertIsInstance(roles, RoleList)
+        self.assertEqual(len(roles.data), 2)
+        self.assertEqual(roles.data[0].name, "organizer")
+
+    @patch("aiohttp.ClientSession.request")
+    async def test_get_role(self, mock_request):
+        mock_response = AsyncMock()
+        mock_response.status = 200
+        mock_response.json.return_value = {
+            "data": {
+                "id": 1,
+                "name": "organizer",
+                "title_name": "Organizer",
+            }
+        }
+        mock_request.return_value.__aenter__.return_value = mock_response
+
+        async with AsyncEventyayClient(api_key="test") as client:
+            role = await client.get_role("event-1", "1")
+
+        self.assertIsInstance(role, Role)
+        self.assertEqual(role.id, 1)
+        self.assertEqual(role.name, "organizer")
 
 
 if __name__ == "__main__":
