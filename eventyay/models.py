@@ -657,3 +657,35 @@ class RoleList(BaseModel):
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra="ignore")
+
+
+class Feedback(BaseModel):
+    """
+    Represents feedback submitted by an attendee for an event or session.
+
+    Attributes:
+        id (int): Unique identifier for the feedback entry.
+        rating (Optional[float]): Numeric rating given by the attendee.
+        comment (Optional[str]): Textual feedback or comments.
+        session_id (Optional[int]): The session this feedback is for.
+        event_id (Optional[int]): The event this feedback belongs to.
+    """
+
+    id: int
+    rating: Optional[float] = None
+    comment: Optional[str] = None
+    session_id: Optional[int] = None
+    event_id: Optional[int] = None
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"Feedback(id={self.id}, rating={self.rating})"
+
+
+class FeedbackList(BaseModel):
+    """Paginated response containing a list of feedback entries."""
+
+    data: List[Feedback]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
