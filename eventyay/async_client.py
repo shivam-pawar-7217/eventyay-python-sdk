@@ -16,6 +16,7 @@ from .async_mixins import (
     AsyncDiscountCodesMixin,
     AsyncOrdersMixin,
     AsyncTaxMixin,
+    AsyncUsersMixin,
 )
 
 
@@ -32,6 +33,7 @@ class AsyncEventyayClient(
     AsyncDiscountCodesMixin,
     AsyncOrdersMixin,
     AsyncTaxMixin,
+    AsyncUsersMixin,
 ):
     """
     Asynchronous client for the Eventyay API.

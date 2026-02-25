@@ -23,6 +23,8 @@ from .models import (
     Order,
     OrderList,
     Tax,
+    User,
+    UserList,
 )
 
 
@@ -162,6 +164,19 @@ class AsyncEventsMixin:
         """
         response_data = await self._get("events")
         return EventList(**response_data)
+
+    async def get_tax(self, event_id: str) -> Tax:
+        """
+        Get tax details for a specific event (Async).
+
+        Args:
+            event_id: The ID of the event to retrieve tax information for.
+
+        Returns:
+            Tax object.
+        """
+        response = await self._get(f"events/{event_id}/tax")
+        return Tax(**response["data"])
 
     async def get_event(self, event_id: int) -> Event:
         """
