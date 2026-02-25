@@ -25,6 +25,8 @@ from eventyay.models import (
     UserList,
     Role,
     RoleList,
+    Feedback,
+    FeedbackList,
 )
 
 
@@ -476,6 +478,47 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(role, Role)
         self.assertEqual(role.id, 1)
         self.assertEqual(role.name, "organizer")
+
+    # --- Feedbacks API ---
+
+    @patch("aiohttp.ClientSession.request")
+    async def test_get_event_feedbacks(self, mock_request):
+        mock_response = AsyncMock()
+        mock_response.status = 200
+        mock_response.json.return_value = {
+            "data": [
+                {"id": 1, "rating": 4.5, "comment": "Great!"},
+            ],
+            "links": {"next": None},
+        }
+        mock_request.return_value.__aenter__.return_value = mock_response
+
+        async with AsyncEventyayClient(api_key="test") as client:
+            feedbacks = await client.get_event_feedbacks("event-1")
+
+        self.assertIsInstance(feedbacks, FeedbackList)
+        self.assertEqual(len(feedbacks.data), 1)
+        self.assertEqual(feedbacks.data[0].rating, 4.5)
+
+    @patch("aiohttp.ClientSession.request")
+    async def test_get_feedback(self, mock_request):
+        mock_response = AsyncMock()
+        mock_response.status = 200
+        mock_response.json.return_value = {
+            "data": {
+                "id": 1,
+                "rating": 5.0,
+                "comment": "Excellent!",
+            }
+        }
+        mock_request.return_value.__aenter__.return_value = mock_response
+
+        async with AsyncEventyayClient(api_key="test") as client:
+            fb = await client.get_feedback("event-1", "1")
+
+        self.assertIsInstance(fb, Feedback)
+        self.assertEqual(fb.id, 1)
+        self.assertEqual(fb.rating, 5.0)
 
 
 if __name__ == "__main__":

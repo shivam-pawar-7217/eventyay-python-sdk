@@ -27,6 +27,8 @@ from .models import (
     UserList,
     Role,
     RoleList,
+    Feedback,
+    FeedbackList,
 )
 
 
@@ -634,3 +636,26 @@ class AsyncRolesMixin:
             f"events/{event_id}/roles/{role_id}"
         )
         return Role(**response["data"])
+
+
+class AsyncFeedbacksMixin:
+    """Async methods for Feedbacks."""
+
+    async def get_event_feedbacks(
+        self, event_id: str, page: int = 1, page_size: int = 25
+    ) -> FeedbackList:
+        """Fetch feedbacks for an event (Async)."""
+        params = {"page[number]": page, "page[size]": page_size}
+        response = await self._get(
+            f"events/{event_id}/feedbacks", params=params
+        )
+        return FeedbackList(**response)
+
+    async def get_feedback(
+        self, event_id: str, feedback_id: str
+    ) -> Feedback:
+        """Get a single feedback entry (Async)."""
+        response = await self._get(
+            f"events/{event_id}/feedbacks/{feedback_id}"
+        )
+        return Feedback(**response["data"])
