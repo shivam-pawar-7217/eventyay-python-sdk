@@ -25,6 +25,8 @@ from .models import (
     Tax,
     User,
     UserList,
+    Role,
+    RoleList,
 )
 
 
@@ -611,3 +613,24 @@ class AsyncUsersMixin:
         app_json = {"data": {"type": "user", "id": str(user_id), "attributes": payload}}
         response = await self._patch(f"users/{user_id}", json=app_json)
         return User(**response["data"])
+
+
+class AsyncRolesMixin:
+    """Async methods for Roles."""
+
+    async def get_event_roles(
+        self, event_id: str, page: int = 1, page_size: int = 25
+    ) -> RoleList:
+        """Fetch roles for an event (Async)."""
+        params = {"page[number]": page, "page[size]": page_size}
+        response = await self._get(
+            f"events/{event_id}/roles", params=params
+        )
+        return RoleList(**response)
+
+    async def get_role(self, event_id: str, role_id: str) -> Role:
+        """Get a single role (Async)."""
+        response = await self._get(
+            f"events/{event_id}/roles/{role_id}"
+        )
+        return Role(**response["data"])

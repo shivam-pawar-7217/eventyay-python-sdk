@@ -32,6 +32,7 @@ from .discount_codes import DiscountCodesMixin
 from .orders import OrdersMixin
 from .tax import TaxMixin
 from .users import UsersMixin
+from .roles import RolesMixin
 
 
 class EventyayClient(
@@ -48,6 +49,7 @@ class EventyayClient(
     OrdersMixin,
     TaxMixin,
     UsersMixin,
+    RolesMixin,
 ):
     """
     The primary entry point for interacting with the Eventyay REST API.
