@@ -21,6 +21,8 @@ from eventyay.models import (
     SponsorList,
     DiscountCode,
     DiscountCodeList,
+    User,
+    UserList,
 )
 
 
@@ -382,6 +384,54 @@ class TestAsyncClient(unittest.IsolatedAsyncioTestCase):
         result = await self.client.get_discount_code("event-1", "1")
         self.assertIsInstance(result, DiscountCode)
         self.assertEqual(result.code, "SAVE20")
+
+    # --- Users API ---
+
+    @patch("aiohttp.ClientSession.request")
+    async def test_get_users(self, mock_request):
+        mock_response = AsyncMock()
+        mock_response.status = 200
+        mock_response.json.return_value = {
+            "data": [
+                {
+                    "id": 1,
+                    "email": "async@test.com",
+                    "first_name": "Async",
+                    "last_name": "User",
+                }
+            ],
+            "links": {"next": None},
+            "meta": {"count": 1},
+        }
+        mock_request.return_value.__aenter__.return_value = mock_response
+
+        async with AsyncEventyayClient(api_key="test") as client:
+            users = await client.get_users(page=1, page_size=10)
+
+        self.assertIsInstance(users, UserList)
+        self.assertEqual(len(users.data), 1)
+        self.assertEqual(users.data[0].email, "async@test.com")
+        self.assertEqual(users.data[0].id, 1)
+
+    @patch("aiohttp.ClientSession.request")
+    async def test_get_user(self, mock_request):
+        user_id = "1"
+        mock_response = AsyncMock()
+        mock_response.status = 200
+        mock_response.json.return_value = {
+            "data": {
+                "id": 1,
+                "email": "async@test.com",
+            }
+        }
+        mock_request.return_value.__aenter__.return_value = mock_response
+
+        async with AsyncEventyayClient(api_key="test") as client:
+            user = await client.get_user(user_id)
+
+        self.assertIsInstance(user, User)
+        self.assertEqual(user.id, 1)
+        self.assertEqual(user.email, "async@test.com")
 
 
 if __name__ == "__main__":

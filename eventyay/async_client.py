@@ -1,7 +1,7 @@
 import aiohttp
 import asyncio
 from typing import Optional, Dict, Any
-from .exceptions import EventyayAPIError, EventyayConnectionError, EventyayTimeoutError
+from .exceptions import EventyayConnectionError
 
 from .async_mixins import (
     AsyncOrganizersMixin,

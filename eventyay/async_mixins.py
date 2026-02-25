@@ -568,3 +568,46 @@ class AsyncTaxMixin:
         """Retrieves the tax configuration for an event (Async)."""
         response_data = await self._get(f"events/{event_identifier}/tax")
         return Tax(**response_data)
+
+
+class AsyncUsersMixin:
+    """Async methods for Users."""
+
+    async def get_users(self, page: int = 1, page_size: int = 25) -> UserList:
+        """
+        Fetch all users (Async). Requires Admin.
+
+        Returns:
+            UserList object.
+        """
+        params = {"page[number]": page, "page[size]": page_size}
+        response = await self._get("users", params=params)
+        return UserList(**response)
+
+    async def get_user(self, user_id: str) -> User:
+        """
+        Get details of a specific user (Async).
+
+        Args:
+            user_id: The ID of the user.
+
+        Returns:
+            User object.
+        """
+        response = await self._get(f"users/{user_id}")
+        return User(**response["data"])
+
+    async def update_user(self, user_id: str, payload: Dict[str, Any]) -> User:
+        """
+        Update an existing user (Async).
+
+        Args:
+            user_id: The ID of the user.
+            payload: JSON patch payload.
+
+        Returns:
+            Updated User object.
+        """
+        app_json = {"data": {"type": "user", "id": str(user_id), "attributes": payload}}
+        response = await self._patch(f"users/{user_id}", json=app_json)
+        return User(**response["data"])
