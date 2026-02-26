@@ -4,6 +4,7 @@ A modern, type-safe, asynchronous Python client for the [Eventyay API](https://a
 
 ## 🌟 Features
 
+*   **16 Full API Domains**: Organizers, Events, Attendees, Speakers, Sessions, Tickets, Tracks, Microlocations, Sponsors, DiscountCodes, Orders, Tax, Users, Roles, Feedbacks, and Settings.
 *   **Async & Sync**: Full support for both synchronous and asynchronous applications.
 *   **Type Safety**: Returns Pydantic models for excellent IDE support and validation.
 *   **Auto-Pagination**: Helper methods to fetch *all* results automatically.

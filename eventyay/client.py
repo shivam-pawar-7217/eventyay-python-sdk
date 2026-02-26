@@ -34,6 +34,7 @@ from .tax import TaxMixin
 from .users import UsersMixin
 from .roles import RolesMixin
 from .feedbacks import FeedbacksMixin
+from .settings import SettingsMixin
 
 
 class EventyayClient(
@@ -52,6 +53,7 @@ class EventyayClient(
     UsersMixin,
     RolesMixin,
     FeedbacksMixin,
+    SettingsMixin,
 ):
     """
     The primary entry point for interacting with the Eventyay REST API.

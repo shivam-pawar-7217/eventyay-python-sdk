@@ -29,6 +29,8 @@ from .models import (
     RoleList,
     Feedback,
     FeedbackList,
+    Setting,
+    SettingList,
 )
 
 
@@ -659,3 +661,44 @@ class AsyncFeedbacksMixin:
             f"events/{event_id}/feedbacks/{feedback_id}"
         )
         return Feedback(**response["data"])
+
+
+class AsyncSettingsMixin:
+    """Async methods for Settings."""
+
+    async def get_settings(
+        self, page: Optional[int] = None, page_size: Optional[int] = None, **kwargs: Any
+    ) -> SettingList:
+        """
+        Get a paginated list of global settings (Async).
+
+        Args:
+            page (Optional[int]): The page number to retrieve. Defaults to None.
+            page_size (Optional[int]): The number of items per page. Defaults to None.
+            **kwargs: Additional query parameters (e.g., filter, sort).
+
+        Returns:
+            SettingList: A paginated list of settings.
+        """
+        params = kwargs.copy()
+        if page is not None:
+            params["page[number]"] = page
+        if page_size is not None:
+            params["page[size]"] = page_size
+
+        response_data = await self._get("settings", params=params)
+        return SettingList(**response_data)
+
+    async def get_setting(self, setting_id: str, **kwargs: Any) -> Setting:
+        """
+        Get a specific setting by ID (Async).
+
+        Args:
+            setting_id (str): The ID of the setting.
+            **kwargs: Additional query parameters.
+
+        Returns:
+            Setting: The setting details.
+        """
+        response_data = await self._get(f"settings/{setting_id}", params=kwargs)
+        return Setting(**response_data["data"])

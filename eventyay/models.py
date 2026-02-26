@@ -689,3 +689,35 @@ class FeedbackList(BaseModel):
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra="ignore")
+
+
+class Setting(BaseModel):
+    """
+    Global application settings from the Eventyay platform.
+
+    Attributes:
+        id (int): Setting ID.
+        app_environment (Optional[str]): E.g. 'production' or 'development'.
+        app_name (Optional[str]): Application name.
+        frontend_url (Optional[str]): Frontend URL.
+    """
+
+    id: int
+    app_environment: Optional[str] = None
+    app_name: Optional[str] = None
+    frontend_url: Optional[str] = None
+    
+    # Allow extra fields to prevent errors if the API returns more configuration flags
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"Setting(id={self.id}, app_name='{self.app_name}')"
+
+
+class SettingList(BaseModel):
+    """List of settings returned by the API."""
+
+    data: List[Setting]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
