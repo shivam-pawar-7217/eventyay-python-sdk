@@ -1,3 +1,7 @@
+import os
+import json
+from pathlib import Path
+
 import typer
 from rich.console import Console
 from rich.panel import Panel
@@ -7,14 +11,59 @@ from eventyay.client import EventyayClient
 app = typer.Typer(help="Eventyay CLI Tool")
 console = Console()
 
-# Initialize client (todo: add config for api key)
-client = EventyayClient()
+CONFIG_DIR = Path.home() / ".config" / "eventyay"
+CONFIG_FILE = CONFIG_DIR / "config.json"
+
+def get_api_key():
+    # 1. Check environment variable
+    api_key = os.environ.get("EVENTYAY_API_KEY")
+    if api_key:
+        return api_key
+    
+    # 2. Check config file
+    if CONFIG_FILE.exists():
+        try:
+            with open(CONFIG_FILE, "r") as f:
+                config = json.load(f)
+                return config.get("api_key")
+        except Exception:
+            pass
+            
+    return None
+
+# Initialize client
+client = EventyayClient(api_key=get_api_key())
 
 
 @app.command()
 def version():
     """Show the CLI version."""
     console.print(Panel("Eventyay CLI v0.1.0", title="Version", style="bold green"))
+
+
+@app.command()
+def login():
+    """Authenticate the CLI with an Eventyay API key."""
+    api_key = typer.prompt("Enter your Eventyay API key", hide_input=True)
+    
+    try:
+        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        config_data = {}
+        if CONFIG_FILE.exists():
+            with open(CONFIG_FILE, "r") as f:
+                try:
+                    config_data = json.load(f)
+                except json.JSONDecodeError:
+                    pass
+                    
+        config_data["api_key"] = api_key
+        
+        with open(CONFIG_FILE, "w") as f:
+            json.dump(config_data, f, indent=4)
+            
+        console.print("[bold green]Successfully saved API key to config.[/bold green]")
+    except Exception as e:
+        console.print(f"[bold red]Error saving config:[/bold red] {e}")
 
 
 events_app = typer.Typer(help="Manage events")
