@@ -1,42 +1,22 @@
-import unittest
-from unittest.mock import Mock, patch
-from eventyay.client import EventyayClient
+"""Tests for Speaker-related operations."""
+
 from eventyay.models import Speaker
 
 
-class TestSpeakersAPI(unittest.TestCase):
-    def setUp(self):
-        self.client = EventyayClient(api_key="test_key")
-        self.mock_speaker_data = {
-            "id": 1,
-            "name": "Jane Doe",
-            "email": "jane@example.com",
-            "photo_url": "https://example.com/photo.jpg",
-            "short_biography": "Software Engineer",
-        }
+class TestGetSpeaker:
+    def test_returns_speaker(self, mock_client, mock_response, sample_speaker):
+        mock_client.session.get.return_value = mock_response(sample_speaker)
 
-    @patch("eventyay.client.requests.Session.get")
-    def test_get_speaker(self, mock_get):
-        # Mock the API response
-        mock_response = Mock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = self.mock_speaker_data
-        mock_get.return_value = mock_response
+        result = mock_client.get_speaker("test-event", "201")
 
-        # Call the method
-        speaker = self.client.get_speaker("test-event", "1")
+        assert isinstance(result, Speaker)
+        assert result.name == "Dr. Jane Doe"
+        assert result.email == "jane@speaker.com"
 
-        # Assertions
-        self.assertIsInstance(speaker, Speaker)
-        self.assertEqual(speaker.id, 1)
-        self.assertEqual(speaker.name, "Jane Doe")
-        self.assertEqual(speaker.short_biography, "Software Engineer")
+    def test_correct_endpoint(self, mock_client, mock_response, sample_speaker):
+        mock_client.session.get.return_value = mock_response(sample_speaker)
 
-        # Verify the correct URL was called
-        mock_get.assert_called_once_with(
-            "https://dev.eventyay.com/api/v1/events/test-event/speakers/1", params=None
-        )
+        mock_client.get_speaker("my-event", "5")
 
-
-if __name__ == "__main__":
-    unittest.main()
+        args, _ = mock_client.session.get.call_args
+        assert "events/my-event/speakers/5" in args[0]

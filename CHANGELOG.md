@@ -1,0 +1,31 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.0] - 2026-04-10
+
+### Added
+- **16 API domains**: Organizers, Events, Attendees, Speakers, Sessions, Tickets, Tracks, Microlocations, Sponsors, DiscountCodes, Orders, Tax, Users, Roles, Feedbacks, Settings.
+- **Synchronous client** (`EventyayClient`) with requests-based HTTP transport, configurable timeout, and automatic retries with exponential backoff.
+- **Asynchronous client** (`AsyncEventyayClient`) with aiohttp-based HTTP transport, retry logic, and full error mapping.
+- **Pydantic models** for all 16 resource types with type-safe attribute access and `extra="ignore"` for forward compatibility.
+- **Paginated list wrappers** (`EventList`, `OrganizerList`, etc.) with `data`, `links`, and `meta` fields.
+- **Auto-pagination helpers** (`get_all_events()`, `get_all_organizers()`, `get_all_users()`) to exhaust all pages.
+- **CRUD operations** for Events and Organizers (create, update, delete).
+- **User management**: list, get, update users with admin-level JSON:API payloads.
+- **Typed exception hierarchy**: `EventyayAPIError` → `EventyayAuthenticationError`, `EventyayNotFoundError`, `EventyayValidationError`, `EventyayConnectionError`, `EventyayTimeoutError`, `EventyayRateLimitError`. All carry `status_code` and `response_body` attributes.
+- **CLI tool** (`eventyay`) built with Typer and Rich:
+  - `login` / `logout` / `config` for authentication management.
+  - `events list|show|create|update|delete` with full CRUD.
+  - `organizers list|show|create|update|delete` with full CRUD.
+  - Read-only `list` and `show` for all 14 remaining domains.
+  - `--output json` flag for machine-readable output on every command.
+  - `version` command.
+- **Context manager support** for both sync and async clients.
+- **PEP 561** `py.typed` marker for type checker compatibility.
+- **CI/CD** via GitHub Actions: lint (flake8), test (pytest + coverage), import smoke test across Python 3.9–3.12.
+- **Comprehensive test suite**: 80+ tests covering all domains, error mapping, CLI commands, pagination utilities, and client configuration.
+- **Documentation**: README with badges, CLI reference, code examples, development guide.
