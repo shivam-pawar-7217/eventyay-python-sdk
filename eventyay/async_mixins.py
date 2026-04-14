@@ -75,7 +75,7 @@ class AsyncOrganizersMixin:
         """
         params = {"page[number]": page}
         response_data = await self._get(f"organizers/{organizer_id}/events", params=params)
-        return EventList(**response_data)
+        return EventList(**parse_jsonapi_list(response_data))
 
     async def create_organizer(
         self,
@@ -104,7 +104,8 @@ class AsyncOrganizersMixin:
         if logo_url:
             data["logo_url"] = logo_url
 
-        response_data = await self._post("organizers", json=data)
+        payload = build_jsonapi_payload("organizer", data)
+        response_data = await self._post("organizers", json=payload)
         return Organizer(**parse_jsonapi_resource(response_data))
 
     async def update_organizer(
@@ -141,7 +142,8 @@ class AsyncOrganizersMixin:
         if not data:
             return await self.get_organizer(organizer_id)
 
-        response_data = await self._patch(f"organizers/{organizer_id}", json=data)
+        payload = build_jsonapi_payload("organizer", data, resource_id=str(organizer_id))
+        response_data = await self._patch(f"organizers/{organizer_id}", json=payload)
         return Organizer(**parse_jsonapi_resource(response_data))
 
     async def delete_organizer(self, organizer_id: str) -> bool:
@@ -169,7 +171,7 @@ class AsyncEventsMixin:
             EventList object.
         """
         response_data = await self._get("events")
-        return EventList(**response_data)
+        return EventList(**parse_jsonapi_list(response_data))
 
     async def get_tax(self, event_id: str) -> Tax:
         """
@@ -195,7 +197,7 @@ class AsyncEventsMixin:
             Event object.
         """
         response_data = await self._get(f"events/{event_id}")
-        return Event(**response_data)
+        return Event(**parse_jsonapi_resource(response_data))
 
     async def get_event_attendees(self, event_id: str) -> AttendeeList:
         """
@@ -275,8 +277,9 @@ class AsyncEventsMixin:
         if location_name:
             data["location_name"] = location_name
 
-        response_data = await self._post("events", json=data)
-        return Event(**response_data)
+        payload = build_jsonapi_payload("event", data)
+        response_data = await self._post("events", json=payload)
+        return Event(**parse_jsonapi_resource(response_data))
 
     async def update_event(
         self,
@@ -320,8 +323,9 @@ class AsyncEventsMixin:
         if not data:
             return await self.get_event(event_id)
 
-        response_data = await self._patch(f"events/{event_id}", json=data)
-        return Event(**response_data)
+        payload = build_jsonapi_payload("event", data, resource_id=str(event_id))
+        response_data = await self._patch(f"events/{event_id}", json=payload)
+        return Event(**parse_jsonapi_resource(response_data))
 
     async def delete_event(self, event_id: int) -> bool:
         """

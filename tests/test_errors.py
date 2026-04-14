@@ -111,6 +111,18 @@ class TestErrorMapping:
         with pytest.raises(EventyayTimeoutError):
             client._get("test")
 
+    def test_malformed_json_success_response_raises_api_error(self, client):
+        response = Mock()
+        response.status_code = 200
+        response.raise_for_status.return_value = None
+        response.json.side_effect = ValueError("invalid json")
+        client.session.get.return_value = response
+
+        with pytest.raises(EventyayAPIError) as exc_info:
+            client._get("test")
+
+        assert exc_info.value.status_code == 200
+
 
 class TestExceptionAttributes:
     def test_status_code_attribute(self):
@@ -129,3 +141,15 @@ class TestExceptionAttributes:
         exc = EventyayAPIError("Generic error")
         assert exc.status_code is None
         assert str(exc) == "Generic error"
+
+    def test_response_body_is_redacted(self):
+        body = '{"token":"abc123","detail":"failed"}\nAuthorization: Bearer secret-token'
+        exc = EventyayAPIError("Bad", status_code=400, response_body=body)
+        assert "abc123" not in exc.response_body
+        assert "secret-token" not in exc.response_body
+        assert "[REDACTED]" in exc.response_body
+
+    def test_response_body_is_truncated(self):
+        body = "x" * 3000
+        exc = EventyayAPIError("Bad", status_code=400, response_body=body)
+        assert len(exc.response_body) == 2048

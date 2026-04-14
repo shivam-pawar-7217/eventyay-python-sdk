@@ -6,6 +6,7 @@ Each exception carries the HTTP status code and response body (when available)
 so that callers can inspect failures programmatically.
 """
 
+import re
 from typing import Optional
 
 
@@ -26,8 +27,32 @@ class EventyayAPIError(Exception):
     ):
         self.message = message
         self.status_code = status_code
-        self.response_body = response_body
+        self.response_body = self._sanitize_response_body(response_body)
         super().__init__(self.message)
+
+    @staticmethod
+    def _sanitize_response_body(response_body: Optional[str], limit: int = 2048) -> Optional[str]:
+        """Reduce accidental leakage by truncating and redacting common credential patterns."""
+        if response_body is None:
+            return None
+
+        body = response_body[:limit]
+
+        # Redact auth-like key/value entries in JSON-ish or plain text content.
+        body = re.sub(
+            r'(?i)("?(token|access_token|refresh_token|api_key|apikey)"?\s*[:=]\s*"?)[^"\s,}]+',
+            r"\1[REDACTED]",
+            body,
+        )
+
+        # Redact bearer/jwt style header values.
+        body = re.sub(
+            r"(?i)(authorization\s*:\s*(bearer|jwt|token)\s+)[^\s,]+",
+            r"\1[REDACTED]",
+            body,
+        )
+
+        return body
 
     def __str__(self):
         parts = [self.message]

@@ -1,8 +1,11 @@
 """Tests for the AsyncEventyayClient."""
 
+from unittest.mock import AsyncMock
+
 import pytest
 
 from eventyay.async_client import AsyncEventyayClient
+from eventyay.exceptions import EventyayAPIError
 
 
 class TestAsyncClientInit:
@@ -15,6 +18,11 @@ class TestAsyncClientInit:
     def test_with_api_key(self):
         client = AsyncEventyayClient(api_key="test-key")
         assert client.headers["Authorization"] == "Token test-key"
+
+    def test_uses_jsonapi_headers(self):
+        client = AsyncEventyayClient()
+        assert client.headers["Content-Type"] == "application/vnd.api+json"
+        assert client.headers["Accept"] == "application/vnd.api+json"
 
     def test_repr(self):
         client = AsyncEventyayClient(api_key="testkey1234")
@@ -46,3 +54,17 @@ class TestAsyncClientConfig:
     def test_custom_base_url(self):
         client = AsyncEventyayClient(base_url="https://custom.api.com/v2/")
         assert client.base_url == "https://custom.api.com/v2"
+
+
+class TestAsyncClientJsonHandling:
+    @pytest.mark.asyncio
+    async def test_safe_json_raises_api_error_on_malformed_response(self):
+        client = AsyncEventyayClient()
+        response = AsyncMock()
+        response.status = 200
+        response.json.side_effect = ValueError("bad json")
+
+        with pytest.raises(EventyayAPIError) as exc_info:
+            await client._safe_json(response)
+
+        assert exc_info.value.status_code == 200

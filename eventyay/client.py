@@ -120,7 +120,8 @@ class EventyayClient(
             total=max_retries,
             backoff_factor=1,  # 1s, 2s, 4s
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["HEAD", "GET", "OPTIONS", "POST", "PATCH", "DELETE"],
+            allowed_methods=frozenset(["HEAD", "GET", "OPTIONS"]),
+            respect_retry_after_header=True,
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
@@ -163,6 +164,16 @@ class EventyayClient(
     def __str__(self):
         return self.__repr__()
 
+    def _safe_json(self, response: requests.Response) -> Dict[str, Any]:
+        """Parse successful response JSON and raise a typed SDK error on malformed bodies."""
+        try:
+            return response.json()
+        except ValueError as e:
+            raise EventyayAPIError(
+                "Server returned malformed JSON in a successful response.",
+                status_code=response.status_code,
+            ) from e
+
     def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Performs a GET request to a specified endpoint.
@@ -184,7 +195,7 @@ class EventyayClient(
         try:
             response = self.session.get(url, params=params, timeout=self.timeout)
             response.raise_for_status()
-            return response.json()
+            return self._safe_json(response)
         except requests.exceptions.HTTPError as e:
             self._handle_error(e.response)
         except requests.exceptions.ConnectionError:
@@ -214,7 +225,7 @@ class EventyayClient(
         try:
             response = self.session.post(url, json=json, timeout=self.timeout)
             response.raise_for_status()
-            return response.json()
+            return self._safe_json(response)
         except requests.exceptions.HTTPError as e:
             self._handle_error(e.response)
         except requests.exceptions.ConnectionError:
@@ -244,7 +255,7 @@ class EventyayClient(
         try:
             response = self.session.patch(url, json=json, timeout=self.timeout)
             response.raise_for_status()
-            return response.json()
+            return self._safe_json(response)
         except requests.exceptions.HTTPError as e:
             self._handle_error(e.response)
         except requests.exceptions.ConnectionError:

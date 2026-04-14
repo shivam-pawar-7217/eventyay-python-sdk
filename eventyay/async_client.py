@@ -99,16 +99,42 @@ class AsyncEventyayClient(
         self.timeout = timeout
         self.max_retries = max_retries
         self.headers: Dict[str, str] = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
+            "Content-Type": "application/vnd.api+json",
+            "Accept": "application/vnd.api+json",
         }
         if api_key:
             self.headers["Authorization"] = f"Token {api_key}"
 
         self._session: Optional[aiohttp.ClientSession] = None
+        self._session_loop: Optional[asyncio.AbstractEventLoop] = None
+
+    async def _ensure_session(self) -> aiohttp.ClientSession:
+        """Ensure a live session exists and is bound to the currently running event loop."""
+        running_loop = asyncio.get_running_loop()
+
+        needs_new_session = (
+            self._session is None
+            or self._session.closed
+            or self._session_loop is not running_loop
+        )
+
+        if needs_new_session:
+            if self._session is not None and not self._session.closed:
+                await self._session.close()
+
+            connector = aiohttp.TCPConnector(limit=100, enable_cleanup_closed=True)
+            timeout = aiohttp.ClientTimeout(total=self.timeout)
+            self._session = aiohttp.ClientSession(
+                headers=self.headers,
+                connector=connector,
+                timeout=timeout,
+            )
+            self._session_loop = running_loop
+
+        return self._session
 
     async def __aenter__(self):
-        self._session = aiohttp.ClientSession(headers=self.headers)
+        await self._ensure_session()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -119,6 +145,7 @@ class AsyncEventyayClient(
         if self._session:
             await self._session.close()
             self._session = None
+            self._session_loop = None
 
     def __repr__(self):
         masked_key = f"{self.api_key[:4]}..." if self.api_key else "None"
@@ -154,18 +181,14 @@ class AsyncEventyayClient(
         json: Optional[Dict[str, Any]] = None,
     ) -> Any:
         """Internal helper for async requests with retry logic and error mapping."""
-        if not self._session:
-            self._session = aiohttp.ClientSession(headers=self.headers)
+        session = await self._ensure_session()
 
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         backoff = 1
-        client_timeout = aiohttp.ClientTimeout(total=self.timeout)
 
         for attempt in range(self.max_retries + 1):
             try:
-                async with self._session.request(
-                    method, url, params=params, json=json, timeout=client_timeout
-                ) as response:
+                async with session.request(method, url, params=params, json=json) as response:
                     # Retry on rate limit
                     if response.status == 429 and attempt < self.max_retries:
                         wait_time = backoff * (2**attempt)
@@ -190,7 +213,7 @@ class AsyncEventyayClient(
                     if method == "DELETE":
                         return None
 
-                    return await response.json()
+                    return await self._safe_json(response)
 
             except (EventyayAPIError,):
                 raise
@@ -208,6 +231,16 @@ class AsyncEventyayClient(
                         status_code=None,
                     )
                 await asyncio.sleep(backoff * (2**attempt))
+
+    async def _safe_json(self, response: aiohttp.ClientResponse) -> Dict[str, Any]:
+        """Parse successful response JSON and raise a typed SDK error on malformed bodies."""
+        try:
+            return await response.json(content_type=None)
+        except Exception as e:
+            raise EventyayAPIError(
+                "Server returned malformed JSON in a successful response.",
+                status_code=response.status,
+            ) from e
 
     async def _handle_error(self, response: aiohttp.ClientResponse) -> None:
         """Map async HTTP error responses to SDK-specific exceptions."""
