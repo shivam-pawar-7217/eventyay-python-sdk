@@ -1,5 +1,10 @@
 # Eventyay Python SDK
 
+[![CI](https://github.com/shivam-pawar-7217/eventyay-python-sdk/actions/workflows/python-app.yml/badge.svg)](https://github.com/shivam-pawar-7217/eventyay-python-sdk/actions)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 A modern, type-safe, asynchronous Python client for the [Eventyay API](https://api.eventyay.com/).
 
 ## 🌟 Features
@@ -9,7 +14,8 @@ A modern, type-safe, asynchronous Python client for the [Eventyay API](https://a
 *   **Type Safety**: Returns Pydantic models for excellent IDE support and validation.
 *   **Auto-Pagination**: Helper methods to fetch *all* results automatically.
 *   **Reliability**: Built-in exponential backoff for rate limits and server errors.
-*   **CLI Tool**: Includes a powerful command-line interface (`eventyay`).
+*   **CLI Tool**: Includes a powerful command-line interface (`eventyay`) with rich output.
+*   **Error Handling**: Typed exceptions with HTTP status codes and response bodies.
 
 ## 📦 Installation
 
@@ -17,33 +23,87 @@ A modern, type-safe, asynchronous Python client for the [Eventyay API](https://a
 pip install eventyay
 ```
 
+For development:
+```bash
+pip install eventyay[dev]
+```
+
 ## 🖥️ CLI Usage
 
 The SDK comes with a command-line tool `eventyay` to manage resources directly from your terminal.
 
-```bash
-# Check version
-eventyay version
+### Authentication
 
+```bash
+# Save API key to config
+eventyay login
+
+# View current configuration
+eventyay config
+
+# Remove stored API key
+eventyay logout
+```
+
+You can also set the `EVENTYAY_API_KEY` environment variable.
+
+### Events
+
+```bash
 # List all events (Rich Table)
 eventyay events list
+
+# List events as JSON (machine-readable)
+eventyay events list --output json
 
 # Show detailed event info (Rich Panel)
 eventyay events show <id>
 
-# List all organizers
-eventyay organizers list
+# Create a new event
+eventyay events create --name "My Event" --identifier "my-event" \
+    --starts-at "2026-01-01T09:00:00Z" --ends-at "2026-01-02T18:00:00Z" \
+    --timezone UTC
 
-# Show organizer details
-eventyay organizers show <id>
+# Update an event
+eventyay events update <id> --name "Updated Name"
+
+# Delete an event
+eventyay events delete <id>
 ```
+
+### All Supported Resources
+
+```bash
+# Organizers (CRUD)
+eventyay organizers list|show|create|update|delete
+
+# Event sub-resources (read-only)
+eventyay speakers list <event_id>
+eventyay sessions list <event_id>
+eventyay tickets list <event_id>
+eventyay attendees list <event_id>
+eventyay tracks list <event_id>
+eventyay microlocations list <event_id>
+eventyay sponsors list <event_id>
+eventyay discount-codes list <event_id>
+eventyay orders list <event_id>
+eventyay tax show <event_id>
+
+# Platform-level resources
+eventyay users list
+eventyay roles list <event_id>
+eventyay feedbacks list <event_id>
+eventyay settings list
+```
+
+All `list` and `show` commands support `--output json` for machine-readable output.
 
 ## 🚀 Quick Start (Python)
 
 ### Synchronous Usage
 
 ```python
-from eventyay.client import EventyayClient
+from eventyay import EventyayClient
 
 client = EventyayClient(api_key="YOUR_API_KEY")
 
@@ -57,16 +117,23 @@ for event in events:
 
 ```python
 import asyncio
-from eventyay.async_client import AsyncEventyayClient
+from eventyay import AsyncEventyayClient
 
 async def main():
-    client = AsyncEventyayClient(api_key="YOUR_API_KEY")
-    
-    # Fetch data asynchronously
-    events = await client.get_all_events()
-    print(f"Fetched {len(events)} events")
+    async with AsyncEventyayClient(api_key="YOUR_API_KEY") as client:
+        events = await client.get_events()
+        print(f"Fetched {len(events.data)} events")
 
 asyncio.run(main())
+```
+
+### Context Manager (Sync)
+
+```python
+with EventyayClient(api_key="YOUR_API_KEY") as client:
+    organizers = client.get_all_organizers()
+    for org in organizers:
+        print(org.name)
 ```
 
 ### Handling Large Data (Pagination)
@@ -78,7 +145,7 @@ These methods return a list of Pydantic objects (`Organizer`, `Event`).
 # Fetch ALL organizers (returns List[Organizer])
 all_organizers = client.get_all_organizers()
 for org in all_organizers:
-    print(org.name) # Type-safe access!
+    print(org.name)  # Type-safe access!
 
 # Fetch ALL events (returns List[Event])
 all_events = client.get_all_events()
@@ -93,21 +160,73 @@ The client automatically retries requests that fail due to:
 
 It uses exponential backoff to be a good API citizen.
 
+### Error Handling
+
+```python
+from eventyay import EventyayClient
+from eventyay.exceptions import EventyayNotFoundError, EventyayAuthenticationError
+
+client = EventyayClient(api_key="YOUR_API_KEY")
+
+try:
+    event = client.get_event(999)
+except EventyayNotFoundError as e:
+    print(f"Event not found (HTTP {e.status_code})")
+except EventyayAuthenticationError as e:
+    print(f"Bad credentials: {e}")
+```
+
 ## 🛡️ Type Safety (Pydantic Models)
 
-The SDK now returns typed objects instead of raw dictionaries. This enables autocomplete and validation in your IDE.
+The SDK returns typed objects instead of raw dictionaries. This enables autocomplete and validation in your IDE.
 
 ```python
 event = client.get_event(1)
-# Before: print(event['name'])
-# Now:
-print(event.name)
-print(event.starts_at)
+print(event.name)        # str
+print(event.starts_at)   # Optional[str]
+print(event.online)      # bool
+```
+
+All 16 model types are importable from the top level:
+
+```python
+from eventyay import Event, Organizer, Attendee, Speaker, Session, Ticket
+```
+
+## 🔧 Development
+
+### Setup
+
+```bash
+git clone https://github.com/shivam-pawar-7217/eventyay-python-sdk.git
+cd eventyay-python-sdk
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+### Running Tests
+
+```bash
+pytest tests/ -v --cov=eventyay
+```
+
+### Code Style
+
+```bash
+black eventyay/ tests/
+isort eventyay/ tests/
+flake8 eventyay/ tests/
 ```
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
+## 📋 Changelog
 
+See [CHANGELOG.md](CHANGELOG.md) for release history.
 
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file.

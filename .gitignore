@@ -29,6 +29,13 @@ htmlcov/
 debug_*.py
 test_output.txt
 
+# Logs
+log*.txt
+*.log
+
 # OS
 .DS_Store
 Thumbs.db
+
+# API data
+api_endpoints.json

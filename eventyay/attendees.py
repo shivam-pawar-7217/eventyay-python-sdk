@@ -1,5 +1,5 @@
-from typing import Optional
 from .models import Attendee, AttendeeList
+from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
 class AttendeesMixin:
@@ -23,9 +23,9 @@ class AttendeesMixin:
         Returns:
             AttendeeList: A Pydantic model containing the list of attendees and pagination metadata.
         """
-        params = {"page": page, "page_size": page_size}
+        params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_identifier}/attendees", params=params)
-        return AttendeeList(**response_data)
+        return AttendeeList(**parse_jsonapi_list(response_data))
 
     def get_attendee(self, event_identifier: str, attendee_id: str) -> Attendee:
         """
@@ -39,4 +39,4 @@ class AttendeesMixin:
             Attendee: The detailed Attendee object.
         """
         response_data = self._get(f"events/{event_identifier}/attendees/{attendee_id}")
-        return Attendee(**response_data)
+        return Attendee(**parse_jsonapi_resource(response_data))

@@ -1,37 +1,39 @@
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from .models import (
-    Organizer,
-    OrganizerList,
-    Event,
-    EventList,
     Attendee,
     AttendeeList,
-    Speaker,
-    SpeakerList,
+    DiscountCode,
+    DiscountCodeList,
+    Event,
+    EventList,
+    Feedback,
+    FeedbackList,
+    Microlocation,
+    MicrolocationList,
+    Order,
+    OrderList,
+    Organizer,
+    OrganizerList,
+    Role,
+    RoleList,
     Session,
     SessionList,
+    Setting,
+    SettingList,
+    Speaker,
+    SpeakerList,
+    Sponsor,
+    SponsorList,
+    Tax,
     Ticket,
     TicketList,
     Track,
     TrackList,
-    Microlocation,
-    MicrolocationList,
-    Sponsor,
-    SponsorList,
-    DiscountCode,
-    DiscountCodeList,
-    Order,
-    OrderList,
-    Tax,
     User,
     UserList,
-    Role,
-    RoleList,
-    Feedback,
-    FeedbackList,
-    Setting,
-    SettingList,
 )
+from .utils import build_jsonapi_payload, parse_jsonapi_list, parse_jsonapi_resource
 
 
 class AsyncOrganizersMixin:
@@ -45,7 +47,7 @@ class AsyncOrganizersMixin:
             OrganizerList object.
         """
         response_data = await self._get("organizers")
-        return OrganizerList(**response_data)
+        return OrganizerList(**parse_jsonapi_list(response_data))
 
     async def get_organizer(self, organizer_id: str) -> Organizer:
         """
@@ -58,7 +60,7 @@ class AsyncOrganizersMixin:
             Organizer object.
         """
         response_data = await self._get(f"organizers/{organizer_id}")
-        return Organizer(**response_data)
+        return Organizer(**parse_jsonapi_resource(response_data))
 
     async def get_organizer_events(self, organizer_id: str, page: int = 1) -> EventList:
         """
@@ -71,10 +73,8 @@ class AsyncOrganizersMixin:
         Returns:
             EventList object containing events and pagination info.
         """
-        params = {"page": page}
-        response_data = await self._get(
-            f"organizers/{organizer_id}/events", params=params
-        )
+        params = {"page[number]": page}
+        response_data = await self._get(f"organizers/{organizer_id}/events", params=params)
         return EventList(**response_data)
 
     async def create_organizer(
@@ -105,7 +105,7 @@ class AsyncOrganizersMixin:
             data["logo_url"] = logo_url
 
         response_data = await self._post("organizers", json=data)
-        return Organizer(**response_data)
+        return Organizer(**parse_jsonapi_resource(response_data))
 
     async def update_organizer(
         self,
@@ -142,7 +142,7 @@ class AsyncOrganizersMixin:
             return await self.get_organizer(organizer_id)
 
         response_data = await self._patch(f"organizers/{organizer_id}", json=data)
-        return Organizer(**response_data)
+        return Organizer(**parse_jsonapi_resource(response_data))
 
     async def delete_organizer(self, organizer_id: str) -> bool:
         """
@@ -181,8 +181,8 @@ class AsyncEventsMixin:
         Returns:
             Tax object.
         """
-        response = await self._get(f"events/{event_id}/tax")
-        return Tax(**response["data"])
+        response_data = await self._get(f"events/{event_id}/tax")
+        return Tax(**parse_jsonapi_resource(response_data))
 
     async def get_event(self, event_id: int) -> Event:
         """
@@ -208,7 +208,7 @@ class AsyncEventsMixin:
             AttendeeList object.
         """
         response_data = await self._get(f"events/{event_id}/attendees")
-        return AttendeeList(**response_data)
+        return AttendeeList(**parse_jsonapi_list(response_data))
 
     async def get_event_speakers(self, event_id: str) -> SpeakerList:
         """
@@ -221,7 +221,7 @@ class AsyncEventsMixin:
             SpeakerList object.
         """
         response_data = await self._get(f"events/{event_id}/speakers")
-        return SpeakerList(**response_data)
+        return SpeakerList(**parse_jsonapi_list(response_data))
 
     async def get_event_sessions(self, event_id: str) -> SessionList:
         """
@@ -234,7 +234,7 @@ class AsyncEventsMixin:
             SessionList object.
         """
         response_data = await self._get(f"events/{event_id}/sessions")
-        return SessionList(**response_data)
+        return SessionList(**parse_jsonapi_list(response_data))
 
     async def create_event(
         self,
@@ -354,11 +354,9 @@ class AsyncTicketsMixin:
         Returns:
             TicketList: A Pydantic model containing the list of tickets and pagination metadata.
         """
-        params = {"page": page, "page_size": page_size}
-        response_data = await self._get(
-            f"events/{event_identifier}/tickets", params=params
-        )
-        return TicketList(**response_data)
+        params = {"page[number]": page, "page[size]": page_size}
+        response_data = await self._get(f"events/{event_identifier}/tickets", params=params)
+        return TicketList(**parse_jsonapi_list(response_data))
 
     async def get_ticket(self, event_identifier: str, ticket_id: str) -> Ticket:
         """
@@ -374,10 +372,8 @@ class AsyncTicketsMixin:
         Raises:
             EventyayNotFoundError: If no ticket is found with the given ID.
         """
-        response_data = await self._get(
-            f"events/{event_identifier}/tickets/{ticket_id}"
-        )
-        return Ticket(**response_data)
+        response_data = await self._get(f"events/{event_identifier}/tickets/{ticket_id}")
+        return Ticket(**parse_jsonapi_resource(response_data))
 
 
 class AsyncAttendeesMixin:
@@ -397,11 +393,9 @@ class AsyncAttendeesMixin:
         Returns:
             AttendeeList: A Pydantic model containing the list of attendees and pagination metadata.
         """
-        params = {"page": page, "page_size": page_size}
-        response_data = await self._get(
-            f"events/{event_identifier}/attendees", params=params
-        )
-        return AttendeeList(**response_data)
+        params = {"page[number]": page, "page[size]": page_size}
+        response_data = await self._get(f"events/{event_identifier}/attendees", params=params)
+        return AttendeeList(**parse_jsonapi_list(response_data))
 
     async def get_attendee(self, event_identifier: str, attendee_id: str) -> Attendee:
         """
@@ -414,10 +408,8 @@ class AsyncAttendeesMixin:
         Returns:
             Attendee: The detailed Attendee object.
         """
-        response_data = await self._get(
-            f"events/{event_identifier}/attendees/{attendee_id}"
-        )
-        return Attendee(**response_data)
+        response_data = await self._get(f"events/{event_identifier}/attendees/{attendee_id}")
+        return Attendee(**parse_jsonapi_resource(response_data))
 
 
 class AsyncSpeakersMixin:
@@ -434,10 +426,8 @@ class AsyncSpeakersMixin:
         Returns:
             Speaker: The detailed Speaker object.
         """
-        response_data = await self._get(
-            f"events/{event_identifier}/speakers/{speaker_id}"
-        )
-        return Speaker(**response_data)
+        response_data = await self._get(f"events/{event_identifier}/speakers/{speaker_id}")
+        return Speaker(**parse_jsonapi_resource(response_data))
 
 
 class AsyncSessionsMixin:
@@ -454,10 +444,8 @@ class AsyncSessionsMixin:
         Returns:
             Session: The detailed Session object.
         """
-        response_data = await self._get(
-            f"events/{event_identifier}/sessions/{session_id}"
-        )
-        return Session(**response_data)
+        response_data = await self._get(f"events/{event_identifier}/sessions/{session_id}")
+        return Session(**parse_jsonapi_resource(response_data))
 
 
 class AsyncTracksMixin:
@@ -467,16 +455,14 @@ class AsyncTracksMixin:
         self, event_identifier: str, page: int = 1, page_size: int = 10
     ) -> TrackList:
         """Retrieves paginated tracks for an event (Async)."""
-        params = {"page": page, "page_size": page_size}
-        response_data = await self._get(
-            f"events/{event_identifier}/tracks", params=params
-        )
-        return TrackList(**response_data)
+        params = {"page[number]": page, "page[size]": page_size}
+        response_data = await self._get(f"events/{event_identifier}/tracks", params=params)
+        return TrackList(**parse_jsonapi_list(response_data))
 
     async def get_track(self, event_identifier: str, track_id: str) -> Track:
         """Fetches a single track (Async)."""
         response_data = await self._get(f"events/{event_identifier}/tracks/{track_id}")
-        return Track(**response_data)
+        return Track(**parse_jsonapi_resource(response_data))
 
 
 class AsyncMicrolocationsMixin:
@@ -486,11 +472,9 @@ class AsyncMicrolocationsMixin:
         self, event_identifier: str, page: int = 1, page_size: int = 10
     ) -> MicrolocationList:
         """Retrieves paginated microlocations for an event (Async)."""
-        params = {"page": page, "page_size": page_size}
-        response_data = await self._get(
-            f"events/{event_identifier}/microlocations", params=params
-        )
-        return MicrolocationList(**response_data)
+        params = {"page[number]": page, "page[size]": page_size}
+        response_data = await self._get(f"events/{event_identifier}/microlocations", params=params)
+        return MicrolocationList(**parse_jsonapi_list(response_data))
 
     async def get_microlocation(
         self, event_identifier: str, microlocation_id: str
@@ -499,7 +483,7 @@ class AsyncMicrolocationsMixin:
         response_data = await self._get(
             f"events/{event_identifier}/microlocations/{microlocation_id}"
         )
-        return Microlocation(**response_data)
+        return Microlocation(**parse_jsonapi_resource(response_data))
 
 
 class AsyncSponsorsMixin:
@@ -509,18 +493,14 @@ class AsyncSponsorsMixin:
         self, event_identifier: str, page: int = 1, page_size: int = 10
     ) -> SponsorList:
         """Retrieves paginated sponsors for an event (Async)."""
-        params = {"page": page, "page_size": page_size}
-        response_data = await self._get(
-            f"events/{event_identifier}/sponsors", params=params
-        )
-        return SponsorList(**response_data)
+        params = {"page[number]": page, "page[size]": page_size}
+        response_data = await self._get(f"events/{event_identifier}/sponsors", params=params)
+        return SponsorList(**parse_jsonapi_list(response_data))
 
     async def get_sponsor(self, event_identifier: str, sponsor_id: str) -> Sponsor:
         """Fetches a single sponsor (Async)."""
-        response_data = await self._get(
-            f"events/{event_identifier}/sponsors/{sponsor_id}"
-        )
-        return Sponsor(**response_data)
+        response_data = await self._get(f"events/{event_identifier}/sponsors/{sponsor_id}")
+        return Sponsor(**parse_jsonapi_resource(response_data))
 
 
 class AsyncDiscountCodesMixin:
@@ -530,20 +510,14 @@ class AsyncDiscountCodesMixin:
         self, event_identifier: str, page: int = 1, page_size: int = 10
     ) -> DiscountCodeList:
         """Retrieves paginated discount codes for an event (Async)."""
-        params = {"page": page, "page_size": page_size}
-        response_data = await self._get(
-            f"events/{event_identifier}/discount-codes", params=params
-        )
-        return DiscountCodeList(**response_data)
+        params = {"page[number]": page, "page[size]": page_size}
+        response_data = await self._get(f"events/{event_identifier}/discount-codes", params=params)
+        return DiscountCodeList(**parse_jsonapi_list(response_data))
 
-    async def get_discount_code(
-        self, event_identifier: str, code_id: str
-    ) -> DiscountCode:
+    async def get_discount_code(self, event_identifier: str, code_id: str) -> DiscountCode:
         """Fetches a single discount code (Async)."""
-        response_data = await self._get(
-            f"events/{event_identifier}/discount-codes/{code_id}"
-        )
-        return DiscountCode(**response_data)
+        response_data = await self._get(f"events/{event_identifier}/discount-codes/{code_id}")
+        return DiscountCode(**parse_jsonapi_resource(response_data))
 
 
 class AsyncOrdersMixin:
@@ -553,18 +527,14 @@ class AsyncOrdersMixin:
         self, event_identifier: str, page: int = 1, page_size: int = 10
     ) -> OrderList:
         """Retrieves paginated orders for an event (Async)."""
-        params = {"page": page, "page_size": page_size}
-        response_data = await self._get(
-            f"events/{event_identifier}/orders", params=params
-        )
-        return OrderList(**response_data)
+        params = {"page[number]": page, "page[size]": page_size}
+        response_data = await self._get(f"events/{event_identifier}/orders", params=params)
+        return OrderList(**parse_jsonapi_list(response_data))
 
     async def get_order(self, event_identifier: str, order_identifier: str) -> Order:
         """Fetches a single order (Async)."""
-        response_data = await self._get(
-            f"events/{event_identifier}/orders/{order_identifier}"
-        )
-        return Order(**response_data)
+        response_data = await self._get(f"events/{event_identifier}/orders/{order_identifier}")
+        return Order(**parse_jsonapi_resource(response_data))
 
 
 class AsyncTaxMixin:
@@ -573,7 +543,7 @@ class AsyncTaxMixin:
     async def get_event_tax(self, event_identifier: str) -> Tax:
         """Retrieves the tax configuration for an event (Async)."""
         response_data = await self._get(f"events/{event_identifier}/tax")
-        return Tax(**response_data)
+        return Tax(**parse_jsonapi_resource(response_data))
 
 
 class AsyncUsersMixin:
@@ -587,8 +557,8 @@ class AsyncUsersMixin:
             UserList object.
         """
         params = {"page[number]": page, "page[size]": page_size}
-        response = await self._get("users", params=params)
-        return UserList(**response)
+        response_data = await self._get("users", params=params)
+        return UserList(**parse_jsonapi_list(response_data))
 
     async def get_user(self, user_id: str) -> User:
         """
@@ -600,8 +570,8 @@ class AsyncUsersMixin:
         Returns:
             User object.
         """
-        response = await self._get(f"users/{user_id}")
-        return User(**response["data"])
+        response_data = await self._get(f"users/{user_id}")
+        return User(**parse_jsonapi_resource(response_data))
 
     async def update_user(self, user_id: str, payload: Dict[str, Any]) -> User:
         """
@@ -614,30 +584,24 @@ class AsyncUsersMixin:
         Returns:
             Updated User object.
         """
-        app_json = {"data": {"type": "user", "id": str(user_id), "attributes": payload}}
-        response = await self._patch(f"users/{user_id}", json=app_json)
-        return User(**response["data"])
+        payload_wrap = build_jsonapi_payload("user", payload, resource_id=str(user_id))
+        response_data = await self._patch(f"users/{user_id}", json=payload_wrap)
+        return User(**parse_jsonapi_resource(response_data))
 
 
 class AsyncRolesMixin:
     """Async methods for Roles."""
 
-    async def get_event_roles(
-        self, event_id: str, page: int = 1, page_size: int = 25
-    ) -> RoleList:
+    async def get_event_roles(self, event_id: str, page: int = 1, page_size: int = 25) -> RoleList:
         """Fetch roles for an event (Async)."""
         params = {"page[number]": page, "page[size]": page_size}
-        response = await self._get(
-            f"events/{event_id}/roles", params=params
-        )
-        return RoleList(**response)
+        response_data = await self._get(f"events/{event_id}/roles", params=params)
+        return RoleList(**parse_jsonapi_list(response_data))
 
     async def get_role(self, event_id: str, role_id: str) -> Role:
         """Get a single role (Async)."""
-        response = await self._get(
-            f"events/{event_id}/roles/{role_id}"
-        )
-        return Role(**response["data"])
+        response_data = await self._get(f"events/{event_id}/roles/{role_id}")
+        return Role(**parse_jsonapi_resource(response_data))
 
 
 class AsyncFeedbacksMixin:
@@ -648,19 +612,13 @@ class AsyncFeedbacksMixin:
     ) -> FeedbackList:
         """Fetch feedbacks for an event (Async)."""
         params = {"page[number]": page, "page[size]": page_size}
-        response = await self._get(
-            f"events/{event_id}/feedbacks", params=params
-        )
-        return FeedbackList(**response)
+        response_data = await self._get(f"events/{event_id}/feedbacks", params=params)
+        return FeedbackList(**parse_jsonapi_list(response_data))
 
-    async def get_feedback(
-        self, event_id: str, feedback_id: str
-    ) -> Feedback:
+    async def get_feedback(self, event_id: str, feedback_id: str) -> Feedback:
         """Get a single feedback entry (Async)."""
-        response = await self._get(
-            f"events/{event_id}/feedbacks/{feedback_id}"
-        )
-        return Feedback(**response["data"])
+        response_data = await self._get(f"events/{event_id}/feedbacks/{feedback_id}")
+        return Feedback(**parse_jsonapi_resource(response_data))
 
 
 class AsyncSettingsMixin:
@@ -687,7 +645,7 @@ class AsyncSettingsMixin:
             params["page[size]"] = page_size
 
         response_data = await self._get("settings", params=params)
-        return SettingList(**response_data)
+        return SettingList(**parse_jsonapi_list(response_data))
 
     async def get_setting(self, setting_id: str, **kwargs: Any) -> Setting:
         """
@@ -701,4 +659,4 @@ class AsyncSettingsMixin:
             Setting: The setting details.
         """
         response_data = await self._get(f"settings/{setting_id}", params=kwargs)
-        return Setting(**response_data["data"])
+        return Setting(**parse_jsonapi_resource(response_data))
