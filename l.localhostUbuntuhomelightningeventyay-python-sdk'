@@ -1,9 +1,0 @@
-[33mcommit ce79fffbf2bb324f3611f2532e2b3d3edf114d1a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
-Author: Shivam <snshivam205@gmail.com>
-Date:   Wed Feb 11 19:29:50 2026 +0000
-
-    feat:
-
- eventyay/organizers.py   | 38 [32m++++++++[m[31m---[m
- tests/test_organizers.py | 70 [32m+++++++++[m[31m------------[m
- 2 files changed, 62 insertions(+), 46 deletions(-)

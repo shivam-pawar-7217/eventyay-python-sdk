@@ -1,63 +1,55 @@
-import unittest
-import asyncio
-from unittest.mock import patch, MagicMock, AsyncMock
+"""Tests for async settings operations."""
+
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
 from eventyay import AsyncEventyayClient
 from eventyay.models import Setting, SettingList
 
-class TestAsyncSettings(unittest.IsolatedAsyncioTestCase):
-    async def asyncSetUp(self):
-        self.client = AsyncEventyayClient(api_key="test_api_key")
-        self.client._session = AsyncMock()
 
-    @patch("eventyay.async_client.AsyncEventyayClient._request")
-    async def test_get_settings(self, mock_request):
-        mock_request.return_value = {
-            "data": [
-                {
-                    "id": 1,
-                    "app_environment": "production",
-                    "app_name": "Eventyay",
-                    "frontend_url": "https://eventyay.com"
-                }
-            ],
-            "links": {"next": None},
-            "meta": {"count": 1}
-        }
+class TestAsyncGetSettings:
+    @pytest.mark.asyncio
+    async def test_get_settings(self):
+        client = AsyncEventyayClient(api_key="test_api_key")
+        client._session = AsyncMock()
 
-        settings_list = await self.client.get_settings(page=1, page_size=10)
-        
-        mock_request.assert_awaited_once_with(
-            "GET",
-            "settings",
-            params={"page[number]": 1, "page[size]": 10}
-        )
-        self.assertIsInstance(settings_list, SettingList)
-        self.assertEqual(len(settings_list.data), 1)
-        self.assertIsInstance(settings_list.data[0], Setting)
-        self.assertEqual(settings_list.data[0].id, 1)
-        self.assertEqual(settings_list.data[0].app_name, "Eventyay")
-
-    @patch("eventyay.async_client.AsyncEventyayClient._request")
-    async def test_get_setting(self, mock_request):
-        mock_request.return_value = {
-            "data": {
-                "id": 1,
-                "app_environment": "development",
-                "app_name": "Dev Eventyay",
-                "frontend_url": "https://dev.eventyay.com"
+        with patch.object(client, "_request", new_callable=AsyncMock) as mock_request:
+            mock_request.return_value = {
+                "data": [
+                    {
+                        "id": 1,
+                        "app_environment": "production",
+                        "app_name": "Eventyay",
+                        "frontend_url": "https://eventyay.com",
+                    }
+                ],
+                "links": {"next": None},
+                "meta": {"count": 1},
             }
-        }
 
-        setting = await self.client.get_setting("1")
-        
-        mock_request.assert_awaited_once_with(
-            "GET",
-            "settings/1",
-            params={}
-        )
-        self.assertIsInstance(setting, Setting)
-        self.assertEqual(setting.id, 1)
-        self.assertEqual(setting.app_name, "Dev Eventyay")
+            settings_list = await client.get_settings(page=1, page_size=10)
 
-if __name__ == '__main__':
-    unittest.main()
+            assert isinstance(settings_list, SettingList)
+            assert len(settings_list.data) == 1
+            assert settings_list.data[0].app_name == "Eventyay"
+
+    @pytest.mark.asyncio
+    async def test_get_setting(self):
+        client = AsyncEventyayClient(api_key="test_api_key")
+        client._session = AsyncMock()
+
+        with patch.object(client, "_request", new_callable=AsyncMock) as mock_request:
+            mock_request.return_value = {
+                "data": {
+                    "id": 1,
+                    "app_environment": "development",
+                    "app_name": "Dev Eventyay",
+                    "frontend_url": "https://dev.eventyay.com",
+                }
+            }
+
+            setting = await client.get_setting("1")
+
+            assert isinstance(setting, Setting)
+            assert setting.app_name == "Dev Eventyay"

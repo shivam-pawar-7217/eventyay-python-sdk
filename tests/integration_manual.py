@@ -1,8 +1,8 @@
 import os
 import unittest
 import uuid
+
 from eventyay import EventyayClient
-from eventyay.exceptions import EventyayAPIError
 
 
 class TestRealAPIIntegration(unittest.TestCase):
@@ -16,9 +16,7 @@ class TestRealAPIIntegration(unittest.TestCase):
     def setUpClass(cls):
         cls.api_key = os.environ.get("EVENTYAY_API_KEY")
         if not cls.api_key:
-            raise unittest.SkipTest(
-                "EVENTYAY_API_KEY not set. Skipping integration tests."
-            )
+            raise unittest.SkipTest("EVENTYAY_API_KEY not set. Skipping integration tests.")
 
         cls.client = EventyayClient(api_key=cls.api_key)
         cls.unique_suffix = str(uuid.uuid4())[:8]
@@ -28,9 +26,7 @@ class TestRealAPIIntegration(unittest.TestCase):
         # 1. Create Organizer
         org_name = f"Test Org {self.unique_suffix}"
         print(f"\nCreating organizer: {org_name}")
-        organizer = self.client.create_organizer(
-            name=org_name, description="Integration Test"
-        )
+        organizer = self.client.create_organizer(name=org_name, description="Integration Test")
         self.assertIsNotNone(organizer.id)
 
         # 2. Create Event for Organizer
@@ -47,9 +43,7 @@ class TestRealAPIIntegration(unittest.TestCase):
 
         # 3. Update Event
         print(f"Updating event ID: {event.id}")
-        updated_event = self.client.update_event(
-            event.id, name=f"{event_name} (Updated)"
-        )
+        updated_event = self.client.update_event(event.id, name=f"{event_name} (Updated)")
         self.assertEqual(updated_event.name, f"{event_name} (Updated)")
 
         # 4. Fetch Event

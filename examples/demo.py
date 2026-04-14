@@ -1,94 +1,106 @@
 """
-Eventyay SDK Demo — Showcasing the Python SDK Features
+Eventyay SDK Demo
 
-This script demonstrates how to use the Eventyay Python SDK
-for common event management tasks.
+Demonstrates key features of the Eventyay Python SDK:
+- Synchronous client usage
+- Auto-pagination
+- Pydantic model access
+- Error handling
+- Context manager
 """
 
-from eventyay.client import EventyayClient
-from eventyay.exceptions import (
-    EventyayConnectionError,
-    EventyayNotFoundError,
-    EventyayAPIError,
-)
+from eventyay import EventyayClient
+from eventyay.exceptions import EventyayNotFoundError, EventyayAuthenticationError
 
 
-def main():
-    print("=" * 60)
-    print("  🚀 Eventyay Python SDK — Demo")
-    print("=" * 60)
+def demo_basic_usage():
+    """Basic synchronous client usage."""
+    print("=== Basic Usage ===")
 
-    # Initialize the client (no API key = public endpoints only)
-    client = EventyayClient()
+    client = EventyayClient(api_key="YOUR_API_KEY")
 
-    # ── 1. Fetch Public Events ──────────────────────────────
-    print("\n📅 Fetching public events...")
+    # Fetch a page of events
+    events = client.get_events(page=1, page_size=5)
+    print(f"Fetched {len(events.data)} events")
+
+    for event in events.data:
+        print(f"  - {event.name} (ID: {event.id})")
+        print(f"    Starts: {event.starts_at}")
+        print(f"    Privacy: {event.privacy}")
+
+
+def demo_auto_pagination():
+    """Auto-pagination: fetch all results."""
+    print("\n=== Auto-Pagination ===")
+
+    client = EventyayClient(api_key="YOUR_API_KEY")
+
+    # Fetches ALL events across all pages
+    all_events = client.get_all_events()
+    print(f"Total events: {len(all_events)}")
+
+    # Same for organizers
+    all_orgs = client.get_all_organizers()
+    print(f"Total organizers: {len(all_orgs)}")
+
+
+def demo_context_manager():
+    """Using the client as a context manager."""
+    print("\n=== Context Manager ===")
+
+    with EventyayClient(api_key="YOUR_API_KEY") as client:
+        events = client.get_events()
+        for event in events.data:
+            print(f"  {event.name}")
+    # Session is automatically closed when exiting the `with` block
+
+
+def demo_error_handling():
+    """Graceful error handling with typed exceptions."""
+    print("\n=== Error Handling ===")
+
+    client = EventyayClient(api_key="YOUR_API_KEY")
+
     try:
-        event_list = client.get_events(page=1, page_size=5)
-        events = event_list.data
-        print(f"   ✅ Found {len(events)} events (page 1)")
+        event = client.get_event(99999)
+    except EventyayNotFoundError as e:
+        print(f"Event not found (HTTP {e.status_code}): {e.message}")
+    except EventyayAuthenticationError as e:
+        print(f"Auth error: {e.message}")
 
-        for event in events[:3]:
-            # Pydantic model — type-safe attribute access
-            print(f"   • {event.name} (ID: {event.id})")
-            if event.starts_at:
-                print(f"     Starts: {event.starts_at}")
-            if event.location_name:
-                print(f"     Location: {event.location_name}")
 
-    except EventyayConnectionError:
-        print("   ❌ Connection error — check your internet")
-        return
-    except EventyayAPIError as e:
-        print(f"   ❌ API Error: {e}")
-        return
+def demo_event_details():
+    """Fetch detailed event sub-resources."""
+    print("\n=== Event Details ===")
 
-    # ── 2. Fetch Speakers for First Event ───────────────────
-    if events:
-        event_id = str(events[0].id)
-        print(f"\n🎤 Speakers for '{events[0].name}'...")
-        try:
-            speakers = client.get_event_speakers(event_id)
-            for speaker in speakers.data[:3]:
-                bio = (speaker.short_biography or "")[:50]
-                print(f"   • {speaker.name} — {bio}")
-        except EventyayNotFoundError:
-            print("   (no speakers found)")
-        except EventyayAPIError:
-            print("   (speakers endpoint unavailable)")
+    client = EventyayClient(api_key="YOUR_API_KEY")
+    event_id = "my-event-slug"
 
-    # ── 3. Fetch Sessions for First Event ───────────────────
-    if events:
-        print(f"\n📋 Sessions for '{events[0].name}'...")
-        try:
-            sessions = client.get_event_sessions(event_id)
-            for session in sessions.data[:3]:
-                print(f"   • {session.title}")
-                if session.starts_at:
-                    print(f"     Time: {session.starts_at}")
-        except EventyayNotFoundError:
-            print("   (no sessions found)")
-        except EventyayAPIError:
-            print("   (sessions endpoint unavailable)")
+    # Tickets
+    tickets = client.get_event_tickets(event_id)
+    for t in tickets.data:
+        price = f"${t.price}" if t.price else "Free"
+        print(f"  Ticket: {t.name} - {price}")
 
-    # ── 4. Fetch Tickets for First Event ────────────────────
-    if events:
-        identifier = events[0].identifier
-        print(f"\n🎫 Tickets for '{events[0].name}'...")
-        try:
-            tickets = client.get_event_tickets(identifier)
-            for ticket in tickets.data[:3]:
-                price_str = f"${ticket.price}" if ticket.price else "Free"
-                print(f"   • {ticket.name} — {price_str}")
-        except EventyayNotFoundError:
-            print("   (no tickets found)")
-        except EventyayAPIError:
-            print("   (tickets endpoint unavailable)")
+    # Speakers
+    speakers = client.get_event_speakers(event_id)
+    for s in speakers.data:
+        print(f"  Speaker: {s.name}")
 
-    print("\n" + "=" * 60)
-    print("  ✨ Demo complete! See README.md for more usage examples.")
-    print("=" * 60)
+    # Sessions
+    sessions = client.get_event_sessions(event_id)
+    for sess in sessions.data:
+        print(f"  Session: {sess.title}")
 
 
 if __name__ == "__main__":
-    main()
+    print("Eventyay Python SDK Demo")
+    print("=" * 40)
+    print("\nNote: Replace 'YOUR_API_KEY' with a real key to run live.\n")
+
+    # Uncomment the demo you want to try:
+    # demo_basic_usage()
+    # demo_auto_pagination()
+    # demo_context_manager()
+    # demo_error_handling()
+    # demo_event_details()
