@@ -1,5 +1,5 @@
-from typing import Optional
 from .models import Session
+from .utils import parse_jsonapi_resource
 
 
 class SessionsMixin:
@@ -21,4 +21,4 @@ class SessionsMixin:
             Session: The detailed Session object.
         """
         response_data = self._get(f"events/{event_identifier}/sessions/{session_id}")
-        return Session(**response_data)
+        return Session(**parse_jsonapi_resource(response_data))

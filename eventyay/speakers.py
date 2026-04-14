@@ -1,5 +1,5 @@
-from typing import Optional
 from .models import Speaker
+from .utils import parse_jsonapi_resource
 
 
 class SpeakersMixin:
@@ -21,4 +21,4 @@ class SpeakersMixin:
             Speaker: The detailed Speaker object.
         """
         response_data = self._get(f"events/{event_identifier}/speakers/{speaker_id}")
-        return Speaker(**response_data)
+        return Speaker(**parse_jsonapi_resource(response_data))

@@ -1,5 +1,5 @@
-from typing import Optional
 from .models import Track, TrackList
+from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
 class TracksMixin:
@@ -24,9 +24,9 @@ class TracksMixin:
             TrackList: A Pydantic model containing the list of tracks
                        and pagination metadata.
         """
-        params = {"page": page, "page_size": page_size}
+        params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_identifier}/tracks", params=params)
-        return TrackList(**response_data)
+        return TrackList(**parse_jsonapi_list(response_data))
 
     def get_track(self, event_identifier: str, track_id: str) -> Track:
         """
@@ -40,4 +40,4 @@ class TracksMixin:
             Track: The detailed Track object.
         """
         response_data = self._get(f"events/{event_identifier}/tracks/{track_id}")
-        return Track(**response_data)
+        return Track(**parse_jsonapi_resource(response_data))

@@ -1,4 +1,5 @@
 from .models import Tax
+from .utils import parse_jsonapi_resource
 
 
 class TaxMixin:
@@ -19,4 +20,4 @@ class TaxMixin:
             Tax: The tax configuration object.
         """
         response_data = self._get(f"events/{event_identifier}/tax")
-        return Tax(**response_data)
+        return Tax(**parse_jsonapi_resource(response_data))

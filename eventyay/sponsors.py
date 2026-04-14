@@ -1,4 +1,5 @@
 from .models import Sponsor, SponsorList
+from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
 class SponsorsMixin:
@@ -22,9 +23,9 @@ class SponsorsMixin:
         Returns:
             SponsorList: Paginated list of sponsors.
         """
-        params = {"page": page, "page_size": page_size}
+        params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_identifier}/sponsors", params=params)
-        return SponsorList(**response_data)
+        return SponsorList(**parse_jsonapi_list(response_data))
 
     def get_sponsor(self, event_identifier: str, sponsor_id: str) -> Sponsor:
         """
@@ -38,4 +39,4 @@ class SponsorsMixin:
             Sponsor: The detailed Sponsor object.
         """
         response_data = self._get(f"events/{event_identifier}/sponsors/{sponsor_id}")
-        return Sponsor(**response_data)
+        return Sponsor(**parse_jsonapi_resource(response_data))

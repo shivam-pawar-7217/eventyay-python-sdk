@@ -1,5 +1,8 @@
-from typing import Optional, Any
+from typing import Any, Optional
+
 from .models import Setting, SettingList
+from .utils import parse_jsonapi_list, parse_jsonapi_resource
+
 
 class SettingsMixin:
     """
@@ -31,7 +34,7 @@ class SettingsMixin:
             params["page[size]"] = page_size
 
         response_data = self._get("settings", params=params)
-        return SettingList(**response_data)
+        return SettingList(**parse_jsonapi_list(response_data))
 
     def get_setting(self, setting_id: str, **kwargs: Any) -> Setting:
         """
@@ -45,4 +48,4 @@ class SettingsMixin:
             Setting: The setting details.
         """
         response_data = self._get(f"settings/{setting_id}", params=kwargs)
-        return Setting(**response_data["data"])
+        return Setting(**parse_jsonapi_resource(response_data))

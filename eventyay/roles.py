@@ -1,4 +1,5 @@
 from .models import Role, RoleList
+from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
 class RolesMixin:
@@ -7,9 +8,7 @@ class RolesMixin:
     Requires self._get() to be provided by the central client.
     """
 
-    def get_event_roles(
-        self, event_id: str, page: int = 1, page_size: int = 25
-    ) -> RoleList:
+    def get_event_roles(self, event_id: str, page: int = 1, page_size: int = 25) -> RoleList:
         """
         Retrieves a paginated list of roles for an event.
 
@@ -22,10 +21,8 @@ class RolesMixin:
             RoleList: A paginated object containing `Role` objects.
         """
         params = {"page[number]": page, "page[size]": page_size}
-        response = self._get(
-            f"events/{event_id}/roles", params=params
-        )
-        return RoleList(**response)
+        response_data = self._get(f"events/{event_id}/roles", params=params)
+        return RoleList(**parse_jsonapi_list(response_data))
 
     def get_role(self, event_id: str, role_id: str) -> Role:
         """
@@ -38,7 +35,5 @@ class RolesMixin:
         Returns:
             Role: A parsed Pydantic `Role` object.
         """
-        response = self._get(
-            f"events/{event_id}/roles/{role_id}"
-        )
-        return Role(**response["data"])
+        response_data = self._get(f"events/{event_id}/roles/{role_id}")
+        return Role(**parse_jsonapi_resource(response_data))

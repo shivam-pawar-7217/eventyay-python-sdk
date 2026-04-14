@@ -1,5 +1,7 @@
-from typing import Optional, Dict, Any
+from typing import Any, Dict
+
 from .models import User, UserList
+from .utils import build_jsonapi_payload, parse_jsonapi_list, parse_jsonapi_resource
 
 
 class UsersMixin:
@@ -21,8 +23,8 @@ class UsersMixin:
             UserList: A paginated object containing a list of `User` objects.
         """
         params = {"page[number]": page, "page[size]": page_size}
-        response = self._get("users", params=params)
-        return UserList(**response)
+        response_data = self._get("users", params=params)
+        return UserList(**parse_jsonapi_list(response_data))
 
     def get_all_users(self) -> list[User]:
         """
@@ -35,10 +37,10 @@ class UsersMixin:
         all_users = []
         page = 1
         while True:
-            response = self.get_users(page=page, page_size=100)
-            all_users.extend(response.data)
+            response_data = self.get_users(page=page, page_size=100)
+            all_users.extend(response_data.data)
 
-            if not response.links or not response.links.get("next"):
+            if not response_data.links or not response_data.links.get("next"):
                 break
             page += 1
 
@@ -54,8 +56,8 @@ class UsersMixin:
         Returns:
             User: A parsed Pydantic `User` object.
         """
-        response = self._get(f"users/{user_id}")
-        return User(**response["data"])
+        response_data = self._get(f"users/{user_id}")
+        return User(**parse_jsonapi_resource(response_data))
 
     def update_user(self, user_id: str, payload: Dict[str, Any]) -> User:
         """
@@ -68,6 +70,6 @@ class UsersMixin:
         Returns:
             User: The updated `User` object.
         """
-        app_json = {"data": {"type": "user", "id": str(user_id), "attributes": payload}}
-        response = self._patch(f"users/{user_id}", json=app_json)
-        return User(**response["data"])
+        payload_wrap = build_jsonapi_payload("user", payload, resource_id=str(user_id))
+        response_data = self._patch(f"users/{user_id}", json=payload_wrap)
+        return User(**parse_jsonapi_resource(response_data))
