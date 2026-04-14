@@ -1,64 +1,90 @@
-import unittest
-from unittest.mock import Mock, MagicMock
-from eventyay.client import EventyayClient
+"""Tests for Organizer-related operations."""
+
+from unittest.mock import Mock
+
+from eventyay.models import Organizer, OrganizerList
 
 
-class TestOrganizers(unittest.TestCase):
-    def setUp(self):
-        # Create a real client but mock the internal session to avoid network calls
-        self.client = EventyayClient(api_key="test-key")
-        self.client.session = Mock()
+class TestGetOrganizers:
+    def test_returns_organizer_list(self, mock_client, mock_response, sample_organizer):
+        mock_client.session.get.return_value = mock_response({"data": [sample_organizer]})
 
-    def test_get_organizer(self):
-        # Arrange
-        organizer_id = "1"
-        expected_response = {"id": 1, "name": "Test Organizer"}
+        result = mock_client.get_organizers()
 
-        # Mock the response object
-        mock_response = Mock()
-        mock_response.json.return_value = expected_response
-        mock_response.status_code = 200
-        self.client.session.get.return_value = mock_response
+        assert isinstance(result, OrganizerList)
+        assert len(result.data) == 1
+        assert result.data[0].name == "FOSSASIA"
 
-        # Act
-        result = self.client.get_organizer(organizer_id)
+    def test_pagination_params(self, mock_client, mock_response, sample_organizer):
+        mock_client.session.get.return_value = mock_response({"data": [sample_organizer]})
 
-        # Assert
-        # Verify get was called with correct URL
-        self.client.session.get.assert_called_once()
-        args, kwargs = self.client.session.get.call_args
-        self.assertTrue(args[0].endswith("organizers/1"))
-        self.assertEqual(result.id, expected_response["id"])
-        self.assertEqual(result.name, expected_response["name"])
+        mock_client.get_organizers(page=3, page_size=25)
 
-    def test_get_organizer_events(self):
-        # Arrange
-        organizer_id = "1"
-        # API now returns {data: [...]} for pagination wrappers
-        expected_response = {
-            "data": [
-                {"id": 101, "name": "Event 1", "identifier": "event1"},
-                {"id": 102, "name": "Event 2", "identifier": "event2"},
-            ]
-        }
-
-        # Mock the response object
-        mock_response = Mock()
-        mock_response.json.return_value = expected_response
-        mock_response.status_code = 200
-        self.client.session.get.return_value = mock_response
-
-        # Act
-        result = self.client.get_organizer_events(organizer_id)
-
-        # Assert
-        # Verify get was called with correct URL
-        self.client.session.get.assert_called_once()
-        args, kwargs = self.client.session.get.call_args
-        self.assertTrue(args[0].endswith("organizers/1/events"))
-        self.assertEqual(len(result.data), 2)
-        self.assertEqual(result.data[0].id, expected_response["data"][0]["id"])
+        _, kwargs = mock_client.session.get.call_args
+        assert kwargs["params"]["page[number]"] == 3
+        assert kwargs["params"]["page[size]"] == 25
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestGetOrganizer:
+    def test_returns_organizer(self, mock_client, mock_response, sample_organizer):
+        mock_client.session.get.return_value = mock_response(sample_organizer)
+
+        result = mock_client.get_organizer("fossasia")
+
+        assert isinstance(result, Organizer)
+        assert result.id == 1
+        assert result.name == "FOSSASIA"
+
+    def test_correct_endpoint(self, mock_client, mock_response, sample_organizer):
+        mock_client.session.get.return_value = mock_response(sample_organizer)
+
+        mock_client.get_organizer("my-org")
+
+        args, _ = mock_client.session.get.call_args
+        assert args[0].endswith("organizers/my-org")
+
+
+class TestGetAllOrganizers:
+    def test_fetches_all_pages(self, mock_client, mock_response, sample_organizer):
+        page1 = mock_response(
+            {"data": [sample_organizer], "links": {"next": "http://api/organizers?page=2"}}
+        )
+        page2 = mock_response(
+            {"data": [{**sample_organizer, "id": 2, "name": "Mozilla"}], "links": {"next": None}}
+        )
+        mock_client.session.get.side_effect = [page1, page2]
+
+        result = mock_client.get_all_organizers()
+
+        assert len(result) == 2
+
+
+class TestCreateOrganizer:
+    def test_creates_organizer(self, mock_client, mock_response, sample_organizer):
+        mock_client.session.post.return_value = mock_response(sample_organizer)
+
+        result = mock_client.create_organizer(name="FOSSASIA", description="Open source org")
+
+        assert isinstance(result, Organizer)
+        assert result.name == "FOSSASIA"
+
+
+class TestUpdateOrganizer:
+    def test_updates_organizer(self, mock_client, mock_response, sample_organizer):
+        updated = {**sample_organizer, "name": "Updated Org"}
+        mock_client.session.patch.return_value = mock_response(updated)
+
+        result = mock_client.update_organizer("fossasia", name="Updated Org")
+
+        assert result.name == "Updated Org"
+
+
+class TestDeleteOrganizer:
+    def test_deletes_organizer(self, mock_client):
+        response = Mock()
+        response.status_code = 204
+        mock_client.session.delete.return_value = response
+
+        result = mock_client.delete_organizer("fossasia")
+
+        assert result is True

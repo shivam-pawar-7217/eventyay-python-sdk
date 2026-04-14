@@ -1,63 +1,25 @@
-import unittest
-from unittest.mock import Mock
-from eventyay.client import EventyayClient
+"""Tests for Feedback-related operations."""
+
+from eventyay.models import Feedback, FeedbackList
 
 
-class TestFeedbacks(unittest.TestCase):
-    def setUp(self):
-        self.client = EventyayClient(api_key="test-key")
-        self.client.session = Mock()
+class TestGetEventFeedbacks:
+    def test_returns_feedback_list(self, mock_client, mock_response, sample_feedback):
+        mock_client.session.get.return_value = mock_response({"data": [sample_feedback]})
 
-    def test_get_event_feedbacks(self):
-        event_id = "1"
-        expected = {
-            "data": [
-                {"id": 1, "rating": 4.5, "comment": "Great!"},
-                {"id": 2, "rating": 3.0, "comment": "OK"},
-            ],
-            "links": {"next": None},
-        }
+        result = mock_client.get_event_feedbacks("test-event")
 
-        mock_response = Mock()
-        mock_response.json.return_value = expected
-        mock_response.status_code = 200
-        self.client.session.get.return_value = mock_response
-
-        result = self.client.get_event_feedbacks(event_id)
-
-        self.client.session.get.assert_called_once()
-        args, kwargs = self.client.session.get.call_args
-        self.assertIn("events/1/feedbacks", args[0])
-        self.assertEqual(len(result.data), 2)
-        self.assertEqual(result.data[0].rating, 4.5)
-        self.assertEqual(result.data[1].comment, "OK")
-
-    def test_get_feedback(self):
-        event_id = "1"
-        feedback_id = "1"
-        expected = {
-            "data": {
-                "id": 1,
-                "rating": 5.0,
-                "comment": "Excellent session!",
-                "session_id": 10,
-            }
-        }
-
-        mock_response = Mock()
-        mock_response.json.return_value = expected
-        mock_response.status_code = 200
-        self.client.session.get.return_value = mock_response
-
-        result = self.client.get_feedback(event_id, feedback_id)
-
-        self.client.session.get.assert_called_once()
-        args, _ = self.client.session.get.call_args
-        self.assertIn("events/1/feedbacks/1", args[0])
-        self.assertEqual(result.id, 1)
-        self.assertEqual(result.rating, 5.0)
-        self.assertEqual(result.session_id, 10)
+        assert isinstance(result, FeedbackList)
+        assert len(result.data) == 1
+        assert result.data[0].rating == 4.5
+        assert result.data[0].comment == "Great event!"
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestGetFeedback:
+    def test_returns_feedback(self, mock_client, mock_response, sample_feedback):
+        mock_client.session.get.return_value = mock_response({"data": sample_feedback})
+
+        result = mock_client.get_feedback("test-event", "1301")
+
+        assert isinstance(result, Feedback)
+        assert result.session_id == 301

@@ -1,81 +1,154 @@
-import unittest
+"""Tests for Event-related operations."""
+
 from unittest.mock import Mock
-from eventyay.client import EventyayClient
+
+from eventyay.models import Event, EventList
 
 
-class TestEvents(unittest.TestCase):
-    def setUp(self):
-        self.client = EventyayClient(api_key="test-key")
-        self.client.session = Mock()
+class TestGetEvent:
+    def test_returns_event_model(self, mock_client, mock_response, sample_event):
+        mock_client.session.get.return_value = mock_response(sample_event)
 
-    def test_get_event(self):
-        event_id = "1"
-        expected = {"id": 1, "name": "Test Event", "identifier": "test-event"}
+        result = mock_client.get_event(1)
 
-        mock_response = Mock()
-        mock_response.json.return_value = expected
-        mock_response.status_code = 200
-        self.client.session.get.return_value = mock_response
+        assert isinstance(result, Event)
+        assert result.id == 1
+        assert result.name == "Test Conference"
+        assert result.identifier == "test-conf-2026"
 
-        result = self.client.get_event(event_id)
+    def test_calls_correct_endpoint(self, mock_client, mock_response, sample_event):
+        mock_client.session.get.return_value = mock_response(sample_event)
 
-        self.client.session.get.assert_called_once()
-        args, _ = self.client.session.get.call_args
-        self.assertTrue(args[0].endswith("events/1"))
-        self.assertEqual(result.id, expected["id"])
-        self.assertEqual(result.name, expected["name"])
+        mock_client.get_event(42)
 
-    def test_get_event_attendees(self):
-        event_id = "1"
-        expected = {"data": [{"id": 101, "firstname": "Attendee 1"}]}
-
-        mock_response = Mock()
-        mock_response.json.return_value = expected
-        mock_response.status_code = 200
-        self.client.session.get.return_value = mock_response
-
-        result = self.client.get_event_attendees(event_id)
-
-        self.client.session.get.assert_called_once()
-        args, _ = self.client.session.get.call_args
-        self.assertTrue(args[0].endswith("events/1/attendees"))
-        self.assertEqual(len(result.data), 1)
-        self.assertEqual(result.data[0].id, expected["data"][0]["id"])
-
-    def test_get_event_sessions(self):
-        event_id = "1"
-        expected = {"data": [{"id": 201, "title": "Talk 1"}]}
-
-        mock_response = Mock()
-        mock_response.json.return_value = expected
-        mock_response.status_code = 200
-        self.client.session.get.return_value = mock_response
-
-        result = self.client.get_event_sessions(event_id)
-
-        self.client.session.get.assert_called_once()
-        args, _ = self.client.session.get.call_args
-        self.assertTrue(args[0].endswith("events/1/sessions"))
-        self.assertEqual(len(result.data), 1)
-        self.assertEqual(result.data[0].id, expected["data"][0]["id"])
-
-    def test_get_event_speakers(self):
-        event_id = "1"
-        expected = {"data": [{"id": 301, "name": "Speaker 1"}]}
-
-        mock_response = Mock()
-        mock_response.json.return_value = expected
-        mock_response.status_code = 200
-        self.client.session.get.return_value = mock_response
-
-        result = self.client.get_event_speakers(event_id)
-
-        self.client.session.get.assert_called_once()
-        args, _ = self.client.session.get.call_args
-        self.assertTrue(args[0].endswith("events/1/speakers"))
-        self.assertEqual(len(result.data), 1)
-        self.assertEqual(result.data[0].id, expected["data"][0]["id"])
+        args, _ = mock_client.session.get.call_args
+        assert args[0].endswith("events/42")
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestGetEvents:
+    def test_returns_event_list(self, mock_client, mock_response, sample_event):
+        mock_client.session.get.return_value = mock_response({"data": [sample_event]})
+
+        result = mock_client.get_events()
+
+        assert isinstance(result, EventList)
+        assert len(result.data) == 1
+        assert result.data[0].name == "Test Conference"
+
+    def test_pagination_params(self, mock_client, mock_response, sample_event):
+        mock_client.session.get.return_value = mock_response({"data": [sample_event]})
+
+        mock_client.get_events(page=2, page_size=20)
+
+        _, kwargs = mock_client.session.get.call_args
+        assert kwargs["params"]["page[number]"] == 2
+        assert kwargs["params"]["page[size]"] == 20
+
+
+class TestGetAllEvents:
+    def test_fetches_all_pages(self, mock_client, mock_response, sample_event):
+        page1 = mock_response(
+            {"data": [sample_event], "links": {"next": "http://api/events?page=2"}}
+        )
+        page2 = mock_response(
+            {"data": [{**sample_event, "id": 2, "name": "Second Event"}], "links": {"next": None}}
+        )
+        mock_client.session.get.side_effect = [page1, page2]
+
+        result = mock_client.get_all_events()
+
+        assert len(result) == 2
+        assert result[0].name == "Test Conference"
+        assert result[1].name == "Second Event"
+
+    def test_stops_on_empty_data(self, mock_client, mock_response):
+        mock_client.session.get.return_value = mock_response({"data": []})
+
+        result = mock_client.get_all_events()
+
+        assert result == []
+
+
+class TestGetEventAttendees:
+    def test_returns_attendee_list(self, mock_client, mock_response, sample_attendee):
+        mock_client.session.get.return_value = mock_response({"data": [sample_attendee]})
+
+        result = mock_client.get_event_attendees("test-event")
+
+        assert len(result.data) == 1
+        assert result.data[0].email == "alice@test.com"
+
+    def test_correct_endpoint(self, mock_client, mock_response, sample_attendee):
+        mock_client.session.get.return_value = mock_response({"data": [sample_attendee]})
+
+        mock_client.get_event_attendees("my-event")
+
+        args, _ = mock_client.session.get.call_args
+        assert "events/my-event/attendees" in args[0]
+
+
+class TestGetEventSessions:
+    def test_returns_session_list(self, mock_client, mock_response, sample_session):
+        mock_client.session.get.return_value = mock_response({"data": [sample_session]})
+
+        result = mock_client.get_event_sessions("test-event")
+
+        assert len(result.data) == 1
+        assert result.data[0].title == "Keynote: Future of Open Source"
+
+
+class TestGetEventSpeakers:
+    def test_returns_speaker_list(self, mock_client, mock_response, sample_speaker):
+        mock_client.session.get.return_value = mock_response({"data": [sample_speaker]})
+
+        result = mock_client.get_event_speakers("test-event")
+
+        assert len(result.data) == 1
+        assert result.data[0].name == "Dr. Jane Doe"
+
+
+class TestCreateEvent:
+    def test_creates_event(self, mock_client, mock_response, sample_event):
+        mock_client.session.post.return_value = mock_response(sample_event)
+
+        result = mock_client.create_event(
+            name="Test Conference",
+            identifier="test-conf-2026",
+            starts_at="2026-06-01T09:00:00Z",
+            ends_at="2026-06-03T18:00:00Z",
+            timezone="UTC",
+        )
+
+        assert isinstance(result, Event)
+        assert result.name == "Test Conference"
+        mock_client.session.post.assert_called_once()
+
+
+class TestUpdateEvent:
+    def test_updates_event(self, mock_client, mock_response, sample_event):
+        updated = {**sample_event, "name": "Updated Conference"}
+        mock_client.session.patch.return_value = mock_response(updated)
+
+        result = mock_client.update_event(event_id=1, name="Updated Conference")
+
+        assert result.name == "Updated Conference"
+
+    def test_no_update_returns_current(self, mock_client, mock_response, sample_event):
+        mock_client.session.get.return_value = mock_response(sample_event)
+
+        result = mock_client.update_event(event_id=1)
+
+        assert result.name == "Test Conference"
+        mock_client.session.get.assert_called_once()
+
+
+class TestDeleteEvent:
+    def test_deletes_event(self, mock_client):
+        response = Mock()
+        response.status_code = 204
+        mock_client.session.delete.return_value = response
+
+        result = mock_client.delete_event(1)
+
+        assert result is True
+        mock_client.session.delete.assert_called_once()
