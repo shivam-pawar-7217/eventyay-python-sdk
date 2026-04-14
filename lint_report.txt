@@ -1,0 +1,318 @@
+eventyay/async_client.py:161:80: E501 line too long (84 > 79 characters)
+eventyay/async_client.py:172:80: E501 line too long (81 > 79 characters)
+eventyay/async_client.py:181:80: E501 line too long (94 > 79 characters)
+eventyay/async_mixins.py:1:1: F401 'typing.List' imported but unused
+eventyay/async_mixins.py:2:80: E501 line too long (84 > 79 characters)
+eventyay/async_mixins.py:64:80: E501 line too long (88 > 79 characters)
+eventyay/async_mixins.py:145:80: E501 line too long (82 > 79 characters)
+eventyay/async_mixins.py:353:80: E501 line too long (86 > 79 characters)
+eventyay/async_mixins.py:356:80: E501 line too long (96 > 79 characters)
+eventyay/async_mixins.py:364:80: E501 line too long (80 > 79 characters)
+eventyay/async_mixins.py:396:80: E501 line too long (88 > 79 characters)
+eventyay/async_mixins.py:399:80: E501 line too long (100 > 79 characters)
+eventyay/async_mixins.py:407:80: E501 line too long (86 > 79 characters)
+eventyay/async_mixins.py:427:80: E501 line too long (83 > 79 characters)
+eventyay/async_mixins.py:447:80: E501 line too long (83 > 79 characters)
+eventyay/async_mixins.py:479:80: E501 line too long (87 > 79 characters)
+eventyay/async_mixins.py:519:80: E501 line too long (83 > 79 characters)
+eventyay/async_mixins.py:563:80: E501 line too long (85 > 79 characters)
+eventyay/async_mixins.py:618:80: E501 line too long (87 > 79 characters)
+eventyay/async_mixins.py:619:80: E501 line too long (80 > 79 characters)
+eventyay/async_mixins.py:671:80: E501 line too long (88 > 79 characters)
+eventyay/async_mixins.py:677:80: E501 line too long (80 > 79 characters)
+eventyay/async_mixins.py:678:80: E501 line too long (86 > 79 characters)
+eventyay/async_mixins.py:704:80: E501 line too long (80 > 79 characters)
+eventyay/attendees.py:1:1: F401 'typing.Optional' imported but unused
+eventyay/attendees.py:3:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/attendees.py:3:80: E501 line too long (84 > 79 characters)
+eventyay/attendees.py:8:80: E501 line too long (82 > 79 characters)
+eventyay/attendees.py:22:80: E501 line too long (88 > 79 characters)
+eventyay/attendees.py:25:80: E501 line too long (100 > 79 characters)
+eventyay/attendees.py:28:80: E501 line too long (88 > 79 characters)
+eventyay/attendees.py:31:80: E501 line too long (80 > 79 characters)
+eventyay/attendees.py:42:80: E501 line too long (87 > 79 characters)
+eventyay/cli.py:11:1: F401 'sys' imported but unused
+eventyay/cli.py:21:80: E501 line too long (82 > 79 characters)
+eventyay/cli.py:82:80: E501 line too long (93 > 79 characters)
+eventyay/cli.py:108:80: E501 line too long (87 > 79 characters)
+eventyay/cli.py:124:80: E501 line too long (82 > 79 characters)
+eventyay/cli.py:144:80: E501 line too long (90 > 79 characters)
+eventyay/cli.py:218:80: E501 line too long (81 > 79 characters)
+eventyay/cli.py:230:80: E501 line too long (80 > 79 characters)
+eventyay/cli.py:260:80: E501 line too long (81 > 79 characters)
+eventyay/cli.py:276:80: E501 line too long (87 > 79 characters)
+eventyay/cli.py:327:80: E501 line too long (81 > 79 characters)
+eventyay/cli.py:378:80: E501 line too long (81 > 79 characters)
+eventyay/cli.py:391:80: E501 line too long (83 > 79 characters)
+eventyay/cli.py:412:80: E501 line too long (81 > 79 characters)
+eventyay/cli.py:420:80: E501 line too long (83 > 79 characters)
+eventyay/cli.py:428:80: E501 line too long (82 > 79 characters)
+eventyay/cli.py:437:80: E501 line too long (81 > 79 characters)
+eventyay/cli.py:446:80: E501 line too long (81 > 79 characters)
+eventyay/cli.py:454:80: E501 line too long (83 > 79 characters)
+eventyay/cli.py:462:80: E501 line too long (82 > 79 characters)
+eventyay/cli.py:481:80: E501 line too long (86 > 79 characters)
+eventyay/cli.py:548:80: E501 line too long (85 > 79 characters)
+eventyay/cli.py:583:80: E501 line too long (88 > 79 characters)
+eventyay/cli.py:615:80: E501 line too long (86 > 79 characters)
+eventyay/cli.py:686:80: E501 line too long (83 > 79 characters)
+eventyay/cli.py:822:80: E501 line too long (81 > 79 characters)
+eventyay/cli.py:877:80: E501 line too long (89 > 79 characters)
+eventyay/cli.py:892:80: E501 line too long (86 > 79 characters)
+eventyay/cli.py:956:80: E501 line too long (85 > 79 characters)
+eventyay/cli.py:1013:80: E501 line too long (80 > 79 characters)
+eventyay/cli.py:1029:80: E501 line too long (88 > 79 characters)
+eventyay/cli.py:1123:80: E501 line too long (81 > 79 characters)
+eventyay/cli.py:1134:80: E501 line too long (81 > 79 characters)
+eventyay/cli.py:1204:80: E501 line too long (80 > 79 characters)
+eventyay/client.py:13:1: F401 '.utils.parse_jsonapi_resource' imported but unused
+eventyay/client.py:13:1: F401 '.utils.parse_jsonapi_list' imported but unused
+eventyay/client.py:85:80: E501 line too long (82 > 79 characters)
+eventyay/client.py:87:80: E501 line too long (85 > 79 characters)
+eventyay/client.py:108:80: E501 line too long (80 > 79 characters)
+eventyay/client.py:109:80: E501 line too long (84 > 79 characters)
+eventyay/client.py:123:80: E501 line too long (82 > 79 characters)
+eventyay/client.py:180:80: E501 line too long (82 > 79 characters)
+eventyay/client.py:187:80: E501 line too long (81 > 79 characters)
+eventyay/client.py:199:80: E501 line too long (83 > 79 characters)
+eventyay/client.py:232:80: E501 line too long (83 > 79 characters)
+eventyay/client.py:265:80: E501 line too long (83 > 79 characters)
+eventyay/client.py:297:80: E501 line too long (83 > 79 characters)
+eventyay/client.py:315:80: E501 line too long (88 > 79 characters)
+eventyay/discount_codes.py:2:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/discount_codes.py:2:80: E501 line too long (84 > 79 characters)
+eventyay/discount_codes.py:32:80: E501 line too long (85 > 79 characters)
+eventyay/discount_codes.py:43:80: E501 line too long (88 > 79 characters)
+eventyay/events.py:8:1: F401 'typing.Dict' imported but unused
+eventyay/events.py:8:1: F401 'typing.Any' imported but unused
+eventyay/events.py:31:80: E501 line too long (85 > 79 characters)
+eventyay/events.py:34:80: E501 line too long (94 > 79 characters)
+eventyay/events.py:43:80: E501 line too long (85 > 79 characters)
+eventyay/events.py:101:80: E501 line too long (88 > 79 characters)
+eventyay/events.py:107:80: E501 line too long (80 > 79 characters)
+eventyay/events.py:165:80: E501 line too long (85 > 79 characters)
+eventyay/events.py:229:80: E501 line too long (87 > 79 characters)
+eventyay/feedbacks.py:2:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/feedbacks.py:2:80: E501 line too long (84 > 79 characters)
+eventyay/microlocations.py:2:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/microlocations.py:2:80: E501 line too long (84 > 79 characters)
+eventyay/models.py:141:80: E501 line too long (80 > 79 characters)
+eventyay/models.py:252:80: E501 line too long (95 > 79 characters)
+eventyay/models.py:338:80: E501 line too long (84 > 79 characters)
+eventyay/models.py:359:80: E501 line too long (81 > 79 characters)
+eventyay/models.py:383:80: E501 line too long (89 > 79 characters)
+eventyay/models.py:398:80: E501 line too long (91 > 79 characters)
+eventyay/models.py:399:80: E501 line too long (106 > 79 characters)
+eventyay/models.py:433:80: E501 line too long (93 > 79 characters)
+eventyay/orders.py:2:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/orders.py:2:80: E501 line too long (84 > 79 characters)
+eventyay/orders.py:27:80: E501 line too long (85 > 79 characters)
+eventyay/organizers.py:1:1: F401 'typing.Dict' imported but unused
+eventyay/organizers.py:1:1: F401 'typing.Any' imported but unused
+eventyay/organizers.py:3:1: F401 '.models.Event' imported but unused
+eventyay/organizers.py:4:80: E501 line too long (84 > 79 characters)
+eventyay/organizers.py:9:80: E501 line too long (83 > 79 characters)
+eventyay/organizers.py:14:80: E501 line too long (82 > 79 characters)
+eventyay/organizers.py:20:80: E501 line too long (89 > 79 characters)
+eventyay/organizers.py:23:80: E501 line too long (102 > 79 characters)
+eventyay/organizers.py:31:80: E501 line too long (89 > 79 characters)
+eventyay/organizers.py:34:80: E501 line too long (82 > 79 characters)
+eventyay/organizers.py:80:80: E501 line too long (82 > 79 characters)
+eventyay/organizers.py:89:80: E501 line too long (94 > 79 characters)
+eventyay/organizers.py:92:80: E501 line too long (85 > 79 characters)
+eventyay/organizers.py:109:80: E501 line too long (83 > 79 characters)
+eventyay/organizers.py:112:80: E501 line too long (81 > 79 characters)
+eventyay/organizers.py:135:80: E501 line too long (80 > 79 characters)
+eventyay/organizers.py:138:80: E501 line too long (81 > 79 characters)
+eventyay/organizers.py:161:80: E501 line too long (89 > 79 characters)
+eventyay/organizers.py:170:80: E501 line too long (81 > 79 characters)
+eventyay/roles.py:2:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/roles.py:2:80: E501 line too long (84 > 79 characters)
+eventyay/sessions.py:1:1: F401 'typing.Optional' imported but unused
+eventyay/sessions.py:3:1: F401 '.utils.parse_jsonapi_list' imported but unused
+eventyay/sessions.py:3:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/sessions.py:3:80: E501 line too long (84 > 79 characters)
+eventyay/sessions.py:8:80: E501 line too long (84 > 79 characters)
+eventyay/sessions.py:24:80: E501 line too long (85 > 79 characters)
+eventyay/settings.py:3:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/settings.py:3:80: E501 line too long (84 > 79 characters)
+eventyay/settings.py:5:1: E302 expected 2 blank lines, found 1
+eventyay/settings.py:21:80: E501 line too long (80 > 79 characters)
+eventyay/settings.py:22:80: E501 line too long (86 > 79 characters)
+eventyay/speakers.py:1:1: F401 'typing.Optional' imported but unused
+eventyay/speakers.py:3:1: F401 '.utils.parse_jsonapi_list' imported but unused
+eventyay/speakers.py:3:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/speakers.py:3:80: E501 line too long (84 > 79 characters)
+eventyay/speakers.py:8:80: E501 line too long (84 > 79 characters)
+eventyay/speakers.py:24:80: E501 line too long (85 > 79 characters)
+eventyay/sponsors.py:2:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/sponsors.py:2:80: E501 line too long (84 > 79 characters)
+eventyay/sponsors.py:27:80: E501 line too long (87 > 79 characters)
+eventyay/sponsors.py:41:80: E501 line too long (85 > 79 characters)
+eventyay/tax.py:2:1: F401 '.utils.parse_jsonapi_list' imported but unused
+eventyay/tax.py:2:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/tax.py:2:80: E501 line too long (84 > 79 characters)
+eventyay/tickets.py:1:1: F401 'typing.Optional' imported but unused
+eventyay/tickets.py:1:1: F401 'typing.List' imported but unused
+eventyay/tickets.py:2:1: F401 '.utils.parse_pagination_params' imported but unused
+eventyay/tickets.py:4:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/tickets.py:4:80: E501 line too long (84 > 79 characters)
+eventyay/tickets.py:9:80: E501 line too long (80 > 79 characters)
+eventyay/tickets.py:23:80: E501 line too long (86 > 79 characters)
+eventyay/tickets.py:26:80: E501 line too long (96 > 79 characters)
+eventyay/tickets.py:29:80: E501 line too long (86 > 79 characters)
+eventyay/tickets.py:46:80: E501 line too long (83 > 79 characters)
+eventyay/tracks.py:1:1: F401 'typing.Optional' imported but unused
+eventyay/tracks.py:3:1: F401 '.utils.build_jsonapi_payload' imported but unused
+eventyay/tracks.py:3:80: E501 line too long (84 > 79 characters)
+eventyay/tracks.py:22:80: E501 line too long (81 > 79 characters)
+eventyay/tracks.py:29:80: E501 line too long (85 > 79 characters)
+eventyay/tracks.py:43:80: E501 line too long (81 > 79 characters)
+eventyay/users.py:1:1: F401 'typing.Optional' imported but unused
+eventyay/users.py:3:80: E501 line too long (84 > 79 characters)
+eventyay/users.py:9:80: E501 line too long (80 > 79 characters)
+eventyay/users.py:67:80: E501 line too long (83 > 79 characters)
+eventyay/users.py:72:80: E501 line too long (87 > 79 characters)
+eventyay/utils.py:8:1: F401 're' imported but unused
+eventyay/utils.py:9:1: F401 'typing.List' imported but unused
+eventyay/utils.py:67:80: E501 line too long (81 > 79 characters)
+eventyay/utils.py:73:80: E501 line too long (85 > 79 characters)
+eventyay/utils.py:90:80: E501 line too long (80 > 79 characters)
+eventyay/utils.py:99:80: E501 line too long (81 > 79 characters)
+eventyay/utils.py:149:80: E501 line too long (92 > 79 characters)
+eventyay/utils.py:161:80: E501 line too long (82 > 79 characters)
+tests/conftest.py:8:1: F401 'unittest.mock.patch' imported but unused
+tests/conftest.py:8:1: F401 'unittest.mock.AsyncMock' imported but unused
+tests/conftest.py:33:80: E501 line too long (80 > 79 characters)
+tests/conftest.py:43:80: E501 line too long (105 > 79 characters)
+tests/conftest.py:63:80: E501 line too long (113 > 79 characters)
+tests/conftest.py:68:80: E501 line too long (111 > 79 characters)
+tests/conftest.py:73:80: E501 line too long (102 > 79 characters)
+tests/conftest.py:78:80: E501 line too long (99 > 79 characters)
+tests/conftest.py:83:80: E501 line too long (109 > 79 characters)
+tests/conftest.py:93:80: E501 line too long (98 > 79 characters)
+tests/conftest.py:98:80: E501 line too long (96 > 79 characters)
+tests/conftest.py:103:80: E501 line too long (108 > 79 characters)
+tests/conftest.py:108:80: E501 line too long (104 > 79 characters)
+tests/conftest.py:113:80: E501 line too long (98 > 79 characters)
+tests/conftest.py:123:80: E501 line too long (84 > 79 characters)
+tests/conftest.py:128:80: E501 line too long (120 > 79 characters)
+tests/integration_manual.py:5:1: F401 'eventyay.exceptions.EventyayAPIError' imported but unused
+tests/integration_manual.py:11:80: E501 line too long (89 > 79 characters)
+tests/integration_manual.py:27:80: E501 line too long (85 > 79 characters)
+tests/test_async_client.py:4:1: F401 'unittest.mock.AsyncMock' imported but unused
+tests/test_async_client.py:4:1: F401 'unittest.mock.Mock' imported but unused
+tests/test_async_client.py:4:1: F401 'unittest.mock.patch' imported but unused
+tests/test_async_client.py:4:1: F401 'unittest.mock.MagicMock' imported but unused
+tests/test_async_client.py:6:1: F401 'eventyay.models.EventList' imported but unused
+tests/test_async_client.py:6:1: F401 'eventyay.models.OrganizerList' imported but unused
+tests/test_async_client.py:6:1: F401 'eventyay.models.Event' imported but unused
+tests/test_async_client.py:6:1: F401 'eventyay.models.Organizer' imported but unused
+tests/test_async_settings.py:15:80: E501 line too long (86 > 79 characters)
+tests/test_async_settings.py:40:80: E501 line too long (86 > 79 characters)
+tests/test_attendees.py:3:1: F401 'pytest' imported but unused
+tests/test_attendees.py:8:80: E501 line too long (86 > 79 characters)
+tests/test_attendees.py:9:80: E501 line too long (89 > 79 characters)
+tests/test_attendees.py:18:80: E501 line too long (81 > 79 characters)
+tests/test_attendees.py:19:80: E501 line too long (89 > 79 characters)
+tests/test_attendees.py:28:80: E501 line too long (81 > 79 characters)
+tests/test_cli.py:4:1: F401 'pathlib.Path' imported but unused
+tests/test_cli.py:6:1: F401 'unittest.mock.patch' imported but unused
+tests/test_cli.py:8:1: F401 'eventyay.cli.reset_client' imported but unused
+tests/test_cli.py:92:80: E501 line too long (103 > 79 characters)
+tests/test_client.py:3:1: F401 'pytest' imported but unused
+tests/test_client.py:4:1: F401 'unittest.mock.Mock' imported but unused
+tests/test_client.py:42:80: E501 line too long (83 > 79 characters)
+tests/test_discount_codes.py:3:1: F401 'pytest' imported but unused
+tests/test_discount_codes.py:8:80: E501 line too long (96 > 79 characters)
+tests/test_discount_codes.py:9:80: E501 line too long (94 > 79 characters)
+tests/test_discount_codes.py:21:80: E501 line too long (91 > 79 characters)
+tests/test_discount_codes.py:22:80: E501 line too long (82 > 79 characters)
+tests/test_errors.py:115:80: E501 line too long (105 > 79 characters)
+tests/test_events.py:3:1: F401 'pytest' imported but unused
+tests/test_events.py:9:80: E501 line too long (81 > 79 characters)
+tests/test_events.py:19:80: E501 line too long (84 > 79 characters)
+tests/test_events.py:29:80: E501 line too long (80 > 79 characters)
+tests/test_events.py:30:80: E501 line too long (86 > 79 characters)
+tests/test_events.py:39:80: E501 line too long (86 > 79 characters)
+tests/test_events.py:51:80: E501 line too long (83 > 79 characters)
+tests/test_events.py:54:80: E501 line too long (98 > 79 characters)
+tests/test_events.py:73:80: E501 line too long (86 > 79 characters)
+tests/test_events.py:74:80: E501 line too long (89 > 79 characters)
+tests/test_events.py:81:80: E501 line too long (81 > 79 characters)
+tests/test_events.py:82:80: E501 line too long (89 > 79 characters)
+tests/test_events.py:91:80: E501 line too long (84 > 79 characters)
+tests/test_events.py:92:80: E501 line too long (88 > 79 characters)
+tests/test_events.py:101:80: E501 line too long (84 > 79 characters)
+tests/test_events.py:102:80: E501 line too long (88 > 79 characters)
+tests/test_events.py:132:80: E501 line too long (80 > 79 characters)
+tests/test_events.py:136:80: E501 line too long (87 > 79 characters)
+tests/test_feedbacks.py:3:1: F401 'pytest' imported but unused
+tests/test_feedbacks.py:8:80: E501 line too long (86 > 79 characters)
+tests/test_feedbacks.py:9:80: E501 line too long (89 > 79 characters)
+tests/test_feedbacks.py:20:80: E501 line too long (81 > 79 characters)
+tests/test_feedbacks.py:21:80: E501 line too long (87 > 79 characters)
+tests/test_microlocations.py:3:1: F401 'pytest' imported but unused
+tests/test_microlocations.py:8:80: E501 line too long (96 > 79 characters)
+tests/test_microlocations.py:9:80: E501 line too long (94 > 79 characters)
+tests/test_microlocations.py:20:80: E501 line too long (91 > 79 characters)
+tests/test_microlocations.py:21:80: E501 line too long (82 > 79 characters)
+tests/test_orders.py:3:1: F401 'pytest' imported but unused
+tests/test_orders.py:8:80: E501 line too long (80 > 79 characters)
+tests/test_orders.py:9:80: E501 line too long (86 > 79 characters)
+tests/test_organizers.py:3:1: F401 'pytest' imported but unused
+tests/test_organizers.py:9:80: E501 line too long (88 > 79 characters)
+tests/test_organizers.py:10:80: E501 line too long (90 > 79 characters)
+tests/test_organizers.py:18:80: E501 line too long (83 > 79 characters)
+tests/test_organizers.py:19:80: E501 line too long (90 > 79 characters)
+tests/test_organizers.py:29:80: E501 line too long (83 > 79 characters)
+tests/test_organizers.py:38:80: E501 line too long (82 > 79 characters)
+tests/test_organizers.py:48:80: E501 line too long (83 > 79 characters)
+tests/test_organizers.py:50:80: E501 line too long (91 > 79 characters)
+tests/test_organizers.py:53:80: E501 line too long (97 > 79 characters)
+tests/test_organizers.py:63:80: E501 line too long (83 > 79 characters)
+tests/test_organizers.py:66:80: E501 line too long (93 > 79 characters)
+tests/test_organizers.py:73:80: E501 line too long (83 > 79 characters)
+tests/test_pagination.py:3:1: F401 'pytest' imported but unused
+tests/test_pagination.py:21:80: E501 line too long (100 > 79 characters)
+tests/test_pagination.py:32:80: E501 line too long (100 > 79 characters)
+tests/test_pagination.py:37:80: E501 line too long (86 > 79 characters)
+tests/test_pagination.py:45:80: E501 line too long (83 > 79 characters)
+tests/test_pagination.py:151:80: E501 line too long (89 > 79 characters)
+tests/test_pagination.py:156:80: E501 line too long (83 > 79 characters)
+tests/test_roles.py:3:1: F401 'pytest' imported but unused
+tests/test_roles.py:9:80: E501 line too long (85 > 79 characters)
+tests/test_roles.py:20:80: E501 line too long (83 > 79 characters)
+tests/test_sessions.py:3:1: F401 'pytest' imported but unused
+tests/test_sessions.py:16:80: E501 line too long (80 > 79 characters)
+tests/test_settings.py:3:1: F401 'pytest' imported but unused
+tests/test_settings.py:8:80: E501 line too long (84 > 79 characters)
+tests/test_settings.py:9:80: E501 line too long (88 > 79 characters)
+tests/test_settings.py:20:80: E501 line too long (86 > 79 characters)
+tests/test_speakers.py:3:1: F401 'pytest' imported but unused
+tests/test_speakers.py:17:80: E501 line too long (80 > 79 characters)
+tests/test_sponsors.py:3:1: F401 'pytest' imported but unused
+tests/test_sponsors.py:8:80: E501 line too long (84 > 79 characters)
+tests/test_sponsors.py:9:80: E501 line too long (88 > 79 characters)
+tests/test_tax.py:3:1: F401 'pytest' imported but unused
+tests/test_tickets.py:3:1: F401 'pytest' imported but unused
+tests/test_tickets.py:8:80: E501 line too long (82 > 79 characters)
+tests/test_tickets.py:9:80: E501 line too long (87 > 79 characters)
+tests/test_tickets.py:19:80: E501 line too long (87 > 79 characters)
+tests/test_tracks.py:3:1: F401 'pytest' imported but unused
+tests/test_tracks.py:8:80: E501 line too long (80 > 79 characters)
+tests/test_tracks.py:9:80: E501 line too long (86 > 79 characters)
+tests/test_users.py:3:1: F401 'pytest' imported but unused
+tests/test_users.py:9:80: E501 line too long (85 > 79 characters)
+tests/test_users.py:20:80: E501 line too long (83 > 79 characters)
+tests/test_users.py:28:80: E501 line too long (83 > 79 characters)
+tests/test_users.py:30:9: F841 local variable 'result' is assigned to but never used
+tests/test_users.py:39:80: E501 line too long (81 > 79 characters)
+tests/test_users.py:49:80: E501 line too long (81 > 79 characters)
+tests/test_users.py:52:80: E501 line too long (103 > 79 characters)
+tests/test_write_ops.py:3:1: F401 'pytest' imported but unused
+tests/test_write_ops.py:5:1: F401 'eventyay.models.Event' imported but unused
+tests/test_write_ops.py:9:80: E501 line too long (85 > 79 characters)
+tests/test_write_ops.py:11:80: E501 line too long (86 > 79 characters)
+tests/test_write_ops.py:24:80: E501 line too long (87 > 79 characters)
+tests/test_write_ops.py:45:80: E501 line too long (82 > 79 characters)
