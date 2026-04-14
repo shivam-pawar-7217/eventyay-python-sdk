@@ -1,4 +1,5 @@
 from .models import Microlocation, MicrolocationList
+from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
 class MicrolocationsMixin:
@@ -22,15 +23,11 @@ class MicrolocationsMixin:
         Returns:
             MicrolocationList: Paginated list of microlocations.
         """
-        params = {"page": page, "page_size": page_size}
-        response_data = self._get(
-            f"events/{event_identifier}/microlocations", params=params
-        )
-        return MicrolocationList(**response_data)
+        params = {"page[number]": page, "page[size]": page_size}
+        response_data = self._get(f"events/{event_identifier}/microlocations", params=params)
+        return MicrolocationList(**parse_jsonapi_list(response_data))
 
-    def get_microlocation(
-        self, event_identifier: str, microlocation_id: str
-    ) -> Microlocation:
+    def get_microlocation(self, event_identifier: str, microlocation_id: str) -> Microlocation:
         """
         Fetches details for a single specific microlocation.
 
@@ -41,7 +38,5 @@ class MicrolocationsMixin:
         Returns:
             Microlocation: The detailed Microlocation object.
         """
-        response_data = self._get(
-            f"events/{event_identifier}/microlocations/{microlocation_id}"
-        )
-        return Microlocation(**response_data)
+        response_data = self._get(f"events/{event_identifier}/microlocations/{microlocation_id}")
+        return Microlocation(**parse_jsonapi_resource(response_data))

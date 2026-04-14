@@ -1,4 +1,5 @@
 from .models import Feedback, FeedbackList
+from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
 class FeedbacksMixin:
@@ -22,14 +23,10 @@ class FeedbacksMixin:
             FeedbackList: Paginated feedback entries.
         """
         params = {"page[number]": page, "page[size]": page_size}
-        response = self._get(
-            f"events/{event_id}/feedbacks", params=params
-        )
-        return FeedbackList(**response)
+        response_data = self._get(f"events/{event_id}/feedbacks", params=params)
+        return FeedbackList(**parse_jsonapi_list(response_data))
 
-    def get_feedback(
-        self, event_id: str, feedback_id: str
-    ) -> Feedback:
+    def get_feedback(self, event_id: str, feedback_id: str) -> Feedback:
         """
         Retrieves a single feedback entry.
 
@@ -40,7 +37,5 @@ class FeedbacksMixin:
         Returns:
             Feedback: A parsed Pydantic `Feedback` object.
         """
-        response = self._get(
-            f"events/{event_id}/feedbacks/{feedback_id}"
-        )
-        return Feedback(**response["data"])
+        response_data = self._get(f"events/{event_id}/feedbacks/{feedback_id}")
+        return Feedback(**parse_jsonapi_resource(response_data))

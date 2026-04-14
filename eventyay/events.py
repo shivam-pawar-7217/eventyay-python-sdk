@@ -1,6 +1,19 @@
-from typing import Dict, Any, Optional, List
-from .utils import parse_pagination_params
-from .models import Event, EventList, AttendeeList, SpeakerList, SessionList
+"""
+Events Mixin — Event-related API operations.
+
+Handles listing, detail fetching, creation, update, and deletion of events,
+as well as accessing event sub-resources (attendees, sessions, speakers).
+"""
+
+from typing import List, Optional
+
+from .models import AttendeeList, Event, EventList, SessionList, SpeakerList
+from .utils import (
+    build_jsonapi_payload,
+    parse_jsonapi_list,
+    parse_jsonapi_resource,
+    parse_pagination_params,
+)
 
 
 class EventsMixin:
@@ -21,9 +34,10 @@ class EventsMixin:
         Returns:
             EventList: A Pydantic model containing the list of events and pagination metadata.
         """
-        params = {"page": page, "page_size": page_size}
+        params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get("events/", params=params)
-        return EventList(**response_data)
+        parsed = parse_jsonapi_list(response_data)
+        return EventList(**parsed)
 
     def get_all_events(self) -> List[Event]:
         """
@@ -51,7 +65,7 @@ class EventsMixin:
                 break
 
             params = parse_pagination_params(next_url)
-            next_page = params.get("page") or params.get("page[number]")
+            next_page = params.get("page[number]") or params.get("page")
             if next_page:
                 page = int(next_page)
             else:
@@ -73,7 +87,8 @@ class EventsMixin:
             EventyayNotFoundError: If no event is found with the given ID.
         """
         response_data = self._get(f"events/{event_id}")
-        return Event(**response_data)
+        parsed = parse_jsonapi_resource(response_data)
+        return Event(**parsed)
 
     def get_event_attendees(
         self, event_id: str, page: int = 1, page_size: int = 10
@@ -89,9 +104,10 @@ class EventsMixin:
         Returns:
             AttendeeList: A Pydantic model containing the list of attendees.
         """
-        params = {"page": page, "page_size": page_size}
+        params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_id}/attendees", params=params)
-        return AttendeeList(**response_data)
+        parsed = parse_jsonapi_list(response_data)
+        return AttendeeList(**parsed)
 
     def get_event_sessions(self, event_id: str, page: int = 1) -> SessionList:
         """
@@ -104,9 +120,10 @@ class EventsMixin:
         Returns:
             SessionList: A Pydantic model containing the list of sessions.
         """
-        params = {"page": page}
+        params = {"page[number]": page}
         response_data = self._get(f"events/{event_id}/sessions", params=params)
-        return SessionList(**response_data)
+        parsed = parse_jsonapi_list(response_data)
+        return SessionList(**parsed)
 
     def get_event_speakers(self, event_id: str, page: int = 1) -> SpeakerList:
         """
@@ -119,9 +136,10 @@ class EventsMixin:
         Returns:
             SpeakerList: A Pydantic model containing the list of speakers.
         """
-        params = {"page": page}
+        params = {"page[number]": page}
         response_data = self._get(f"events/{event_id}/speakers", params=params)
-        return SpeakerList(**response_data)
+        parsed = parse_jsonapi_list(response_data)
+        return SpeakerList(**parsed)
 
     def create_event(
         self,
@@ -143,14 +161,14 @@ class EventsMixin:
             starts_at (str): Start time in ISO 8601 format.
             ends_at (str): End time in ISO 8601 format.
             timezone (str): Timezone string (e.g., 'UTC', 'Asia/Kolkata').
-            privacy (str, optional): Event privacy setting ('public' or 'private'). Defaults to "public".
+            privacy (str, optional): Event privacy. Defaults to "public".
             location_name (str, optional): Name of the physical location.
             online (bool, optional): Whether the event is virtual. Defaults to False.
 
         Returns:
             Event: The newly created Event object.
         """
-        data = {
+        attributes = {
             "name": name,
             "identifier": identifier,
             "starts_at": starts_at,
@@ -160,10 +178,12 @@ class EventsMixin:
             "online": online,
         }
         if location_name:
-            data["location_name"] = location_name
+            attributes["location_name"] = location_name
 
-        response_data = self._post("events", json=data)
-        return Event(**response_data)
+        payload = build_jsonapi_payload("event", attributes)
+        response_data = self._post("events", json=payload)
+        parsed = parse_jsonapi_resource(response_data)
+        return Event(**parsed)
 
     def update_event(
         self,
@@ -190,25 +210,27 @@ class EventsMixin:
         Returns:
             Event: The updated Event object.
         """
-        data = {}
+        attributes = {}
         if name:
-            data["name"] = name
+            attributes["name"] = name
         if starts_at:
-            data["starts_at"] = starts_at
+            attributes["starts_at"] = starts_at
         if ends_at:
-            data["ends_at"] = ends_at
+            attributes["ends_at"] = ends_at
         if timezone:
-            data["timezone"] = timezone
+            attributes["timezone"] = timezone
         if privacy:
-            data["privacy"] = privacy
+            attributes["privacy"] = privacy
         if location_name:
-            data["location_name"] = location_name
+            attributes["location_name"] = location_name
 
-        if not data:
+        if not attributes:
             return self.get_event(event_id)
 
-        response_data = self._patch(f"events/{event_id}", json=data)
-        return Event(**response_data)
+        payload = build_jsonapi_payload("event", attributes, resource_id=str(event_id))
+        response_data = self._patch(f"events/{event_id}", json=payload)
+        parsed = parse_jsonapi_resource(response_data)
+        return Event(**parsed)
 
     def delete_event(self, event_id: int) -> bool:
         """

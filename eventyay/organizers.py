@@ -1,6 +1,12 @@
-from typing import Dict, Any, Optional, List
-from .utils import parse_pagination_params
-from .models import Organizer, OrganizerList, EventList, Event
+from typing import List, Optional
+
+from .models import EventList, Organizer, OrganizerList
+from .utils import (
+    build_jsonapi_payload,
+    parse_jsonapi_list,
+    parse_jsonapi_resource,
+    parse_pagination_params,
+)
 
 
 class OrganizersMixin:
@@ -21,9 +27,9 @@ class OrganizersMixin:
         Returns:
             OrganizerList: A Pydantic model containing the list of organizers and pagination metadata.
         """
-        params = {"page": page, "page_size": page_size}
+        params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get("organizers/", params=params)
-        return OrganizerList(**response_data)
+        return OrganizerList(**parse_jsonapi_list(response_data))
 
     def get_all_organizers(self) -> List[Organizer]:
         """
@@ -74,7 +80,7 @@ class OrganizersMixin:
             EventyayNotFoundError: If no organizer is found with the given ID.
         """
         response_data = self._get(f"organizers/{organizer_id}")
-        return Organizer(**response_data)
+        return Organizer(**parse_jsonapi_resource(response_data))
 
     def get_organizer_events(self, organizer_id: str, page: int = 1) -> EventList:
         """
@@ -87,9 +93,9 @@ class OrganizersMixin:
         Returns:
             EventList: A Pydantic model containing the list of events and pagination metadata.
         """
-        params = {"page": page}
+        params = {"page[number]": page}
         response_data = self._get(f"organizers/{organizer_id}/events", params=params)
-        return EventList(**response_data)
+        return EventList(**parse_jsonapi_list(response_data))
 
     def create_organizer(
         self,
@@ -118,8 +124,9 @@ class OrganizersMixin:
         if logo_url:
             data["logo_url"] = logo_url
 
-        response_data = self._post("organizers", json=data)
-        return Organizer(**response_data)
+        payload = build_jsonapi_payload("organizer", data)
+        response_data = self._post("organizers", json=payload)
+        return Organizer(**parse_jsonapi_resource(response_data))
 
     def update_organizer(
         self,
@@ -156,8 +163,9 @@ class OrganizersMixin:
             # No updates provided, return current state
             return self.get_organizer(organizer_id)
 
-        response_data = self._patch(f"organizers/{organizer_id}", json=data)
-        return Organizer(**response_data)
+        payload = build_jsonapi_payload("organizer", data, resource_id=str(organizer_id))
+        response_data = self._patch(f"organizers/{organizer_id}", json=payload)
+        return Organizer(**parse_jsonapi_resource(response_data))
 
     def delete_organizer(self, organizer_id: str) -> bool:
         """

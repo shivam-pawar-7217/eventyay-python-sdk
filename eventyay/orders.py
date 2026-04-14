@@ -1,4 +1,5 @@
 from .models import Order, OrderList
+from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
 class OrdersMixin:
@@ -22,9 +23,9 @@ class OrdersMixin:
         Returns:
             OrderList: Paginated list of orders.
         """
-        params = {"page": page, "page_size": page_size}
+        params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_identifier}/orders", params=params)
-        return OrderList(**response_data)
+        return OrderList(**parse_jsonapi_list(response_data))
 
     def get_order(self, event_identifier: str, order_identifier: str) -> Order:
         """
@@ -37,7 +38,5 @@ class OrdersMixin:
         Returns:
             Order: The detailed Order object.
         """
-        response_data = self._get(
-            f"events/{event_identifier}/orders/{order_identifier}"
-        )
-        return Order(**response_data)
+        response_data = self._get(f"events/{event_identifier}/orders/{order_identifier}")
+        return Order(**parse_jsonapi_resource(response_data))

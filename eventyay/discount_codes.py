@@ -1,4 +1,5 @@
 from .models import DiscountCode, DiscountCodeList
+from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
 class DiscountCodesMixin:
@@ -22,11 +23,9 @@ class DiscountCodesMixin:
         Returns:
             DiscountCodeList: Paginated list of discount codes.
         """
-        params = {"page": page, "page_size": page_size}
-        response_data = self._get(
-            f"events/{event_identifier}/discount-codes", params=params
-        )
-        return DiscountCodeList(**response_data)
+        params = {"page[number]": page, "page[size]": page_size}
+        response_data = self._get(f"events/{event_identifier}/discount-codes", params=params)
+        return DiscountCodeList(**parse_jsonapi_list(response_data))
 
     def get_discount_code(self, event_identifier: str, code_id: str) -> DiscountCode:
         """
@@ -40,4 +39,4 @@ class DiscountCodesMixin:
             DiscountCode: The detailed DiscountCode object.
         """
         response_data = self._get(f"events/{event_identifier}/discount-codes/{code_id}")
-        return DiscountCode(**response_data)
+        return DiscountCode(**parse_jsonapi_resource(response_data))
