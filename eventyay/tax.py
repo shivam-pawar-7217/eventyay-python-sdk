@@ -22,3 +22,7 @@ class TaxMixin(SyncTransportBase):
         """
         response_data = self._get(f"events/{event_identifier}/tax")
         return Tax(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))
+
+    def get_tax(self, event_identifier: str) -> Tax:
+        """Backward-compatible alias matching async naming convenience."""
+        return self.get_event_tax(event_identifier)

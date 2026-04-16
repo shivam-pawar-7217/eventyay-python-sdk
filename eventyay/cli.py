@@ -2,8 +2,8 @@
 Eventyay CLI Tool
 
 A rich, interactive command-line interface for the Eventyay API.
-Supports all 16 resource domains with list/show operations,
-CRUD for events and organizers, and machine-readable JSON output.
+Provides practical coverage for common organizer/event workflows,
+selected read/list operations, and machine-readable JSON output.
 """
 
 import json

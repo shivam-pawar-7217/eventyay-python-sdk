@@ -22,3 +22,12 @@ class TestGetEventTax:
 
         args, _ = mock_client.session.get.call_args
         assert "events/my-event/tax" in args[0]
+
+    def test_get_tax_alias(self, mock_client, mock_response, sample_tax):
+        mock_client.session.get.return_value = mock_response(sample_tax)
+
+        result = mock_client.get_tax("my-event")
+
+        assert isinstance(result, Tax)
+        args, _ = mock_client.session.get.call_args
+        assert "events/my-event/tax" in args[0]

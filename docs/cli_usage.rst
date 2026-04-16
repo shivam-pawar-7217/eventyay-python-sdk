@@ -3,6 +3,12 @@ CLI Tool Usage
 
 The Eventyay Python SDK comes with a built-in command-line interface (CLI) for managing your account without writing code.
 
+Scope
+-----
+The SDK exposes a broader API surface than the CLI commands. The CLI intentionally
+focuses on common day-to-day workflows (organizers/events plus selected read/list
+operations) while the Python clients provide full programmatic coverage.
+
 Setup
 -----
 The CLI is installed automatically when you run ``pip install .``.
