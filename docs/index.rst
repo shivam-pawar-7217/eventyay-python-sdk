@@ -8,8 +8,10 @@ Welcome to Eventyay Python SDK's documentation!
    introduction
    installation
    quickstart
+   production_hardening
    api_reference
    cli_usage
+   release_checklist
    contributing
 
 Introduction
