@@ -5,6 +5,9 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"
 
 permissions:
   contents: read
@@ -37,6 +40,14 @@ jobs:
         flake8 eventyay/ tests/ --count --exclude=.venv,venv --select=E9,F63,F7,F82 --show-source --statistics
         # Warnings (non-blocking)
         flake8 eventyay/ tests/ --count --exclude=.venv,venv --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Check bidirectional Unicode controls
+      run: |
+        python bidi_check.py
+
+    - name: Type check with mypy
+      run: |
+        mypy --config-file pyproject.toml eventyay
     
     - name: Test with pytest
       run: |
@@ -45,3 +56,28 @@ jobs:
     - name: Import smoke test
       run: |
         python -c "from eventyay import EventyayClient, AsyncEventyayClient; print('Import OK')"
+
+  live-contract:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e ".[dev]"
+
+    - name: Run optional live contract checks
+      env:
+        EVENTYAY_LIVE_TEST: "1"
+        EVENTYAY_LIVE_BASE_URL: ${{ vars.EVENTYAY_LIVE_BASE_URL }}
+        EVENTYAY_LIVE_API_KEY: ${{ secrets.EVENTYAY_LIVE_API_KEY }}
+      run: |
+        pytest tests/test_contract_live_optional.py -q

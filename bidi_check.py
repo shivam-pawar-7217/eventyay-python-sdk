@@ -1,32 +1,69 @@
-import os
-import sys
+from pathlib import Path
 
-BIDI_CHARS = [
-    '\u202A', '\u202B', '\u202D', '\u202E', 
-    '\u2066', '\u2067', '\u2068', '\u202C', '\u2069'
-]
+BIDI_CHARS = {
+    "\u202A",  # LRE
+    "\u202B",  # RLE
+    "\u202D",  # LRO
+    "\u202E",  # RLO
+    "\u2066",  # LRI
+    "\u2067",  # RLI
+    "\u2068",  # FSI
+    "\u202C",  # PDF
+    "\u2069",  # PDI
+}
 
 BIDI_HEX = {c: hex(ord(c)) for c in BIDI_CHARS}
+IGNORED_PARTS = {".venv", "venv", ".git", "__pycache__", ".mypy_cache", ".pytest_cache"}
+SCANNED_SUFFIXES = {
+    ".py",
+    ".md",
+    ".rst",
+    ".toml",
+    ".yml",
+    ".yaml",
+    ".json",
+    ".ini",
+    ".cfg",
+    ".txt",
+}
 
-directory = "/home/lightning/eventyay-python-sdk"
-found_issues = False
 
-for root, _, files in os.walk(directory):
-    if '.venv' in root or '.git' in root or '__pycache__' in root:
-        continue
-    for file in files:
-        if not file.endswith('.py'):
+def should_scan(path: Path) -> bool:
+    return path.suffix.lower() in SCANNED_SUFFIXES
+
+
+def main() -> int:
+    repo_root = Path(__file__).resolve().parent
+    found_issues = False
+
+    for path in repo_root.rglob("*"):
+        if not path.is_file():
             continue
-        path = os.path.join(root, file)
-        try:
-            with open(path, 'r', encoding='utf-8') as f:
-                content = f.read()
-                for i, char in enumerate(content):
-                    if char in BIDI_CHARS:
-                        print(f"BIDI CHAR FOUND in {path} at position {i}: {BIDI_HEX[char]}")
-                        found_issues = True
-        except Exception:
-            pass
+        if any(part in IGNORED_PARTS for part in path.parts):
+            continue
+        if not should_scan(path):
+            continue
 
-if not found_issues:
-    print("No bidirectional Unicode characters found in the codebase.")
+        try:
+            content = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+
+        for line_num, line in enumerate(content.splitlines(), start=1):
+            for col_num, char in enumerate(line, start=1):
+                if char in BIDI_CHARS:
+                    rel = path.relative_to(repo_root)
+                    print(
+                        f"BIDI CHAR FOUND in {rel}:{line_num}:{col_num} ({BIDI_HEX[char]})"
+                    )
+                    found_issues = True
+
+    if found_issues:
+        return 1
+
+    print("No bidirectional Unicode characters found in scanned files.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
