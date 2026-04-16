@@ -12,7 +12,7 @@ compatibility when new fields are added to the server.
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, ValidationInfo, field_validator
 
 # ── Core Resources ───────────────────────────────────────────
 
@@ -30,6 +30,20 @@ class Organizer(BaseModel):
 
     def __str__(self):
         return f"Organizer(id={self.id}, name='{self.name}')"
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class GenericResource(BaseModel):
+    """Fallback resource model for domains without dedicated typed models yet."""
+
+    id: int
+
+    model_config = ConfigDict(extra="allow")
+
+    def __str__(self):
+        return f"GenericResource(id={self.id})"
 
     def __repr__(self):
         return self.__str__()
@@ -134,6 +148,50 @@ class Event(BaseModel):
     paypal_email: Optional[str] = None
     is_stripe_linked: Optional[bool] = False
     chat_room_name: Optional[str] = None
+
+    @field_validator(
+        "online",
+        "stream_loop",
+        "stream_autoplay",
+        "show_remaining_tickets",
+        "is_tax_enabled",
+        "is_billing_info_mandatory",
+        "is_donation_enabled",
+        "can_pay_by_paypal",
+        "can_pay_by_stripe",
+        "can_pay_by_cheque",
+        "can_pay_by_bank",
+        "can_pay_by_invoice",
+        "can_pay_onsite",
+        "can_pay_by_omise",
+        "can_pay_by_alipay",
+        "can_pay_by_paytm",
+        "is_sessions_speakers_enabled",
+        "is_sponsors_enabled",
+        "is_featured",
+        "is_promoted",
+        "is_announced",
+        "is_ticket_form_enabled",
+        "is_cfs_enabled",
+        "is_chat_enabled",
+        "is_videoroom_enabled",
+        "is_document_enabled",
+        "is_map_shown",
+        "is_badges_enabled",
+        "has_owner_info",
+        "is_oneclick_signup_enabled",
+        mode="before",
+    )
+    @classmethod
+    def _coerce_nullable_bools(cls, value: Any, info: ValidationInfo) -> Any:
+        if value is None:
+            nullable_true_defaults = {
+                "is_ticket_form_enabled": True,
+                "is_badges_enabled": True,
+            }
+            field_name = info.field_name or ""
+            return nullable_true_defaults.get(field_name, False)
+        return value
 
     model_config = ConfigDict(extra="ignore")
 
@@ -386,6 +444,158 @@ class DiscountCode(BaseModel):
         return self.__str__()
 
 
+class AccessCode(BaseModel):
+    """Represents an access code used to unlock ticket availability."""
+
+    id: int
+    code: Optional[str] = None
+    access_url: Optional[str] = None
+    is_active: Optional[bool] = True
+    tickets_number: Optional[int] = None
+    min_quantity: Optional[int] = None
+    max_quantity: Optional[int] = None
+    valid_from: Optional[str] = None
+    valid_till: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"AccessCode(id={self.id}, code='{self.code}')"
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class RoleInvite(BaseModel):
+    """Represents an invitation to assign an event role to a user."""
+
+    id: int
+    email: Optional[str] = None
+    token: Optional[str] = None
+    status: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"RoleInvite(id={self.id}, email='{self.email}', status='{self.status}')"
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class EventType(BaseModel):
+    """Represents an event classification type."""
+
+    id: int
+    name: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"EventType(id={self.id}, name='{self.name}')"
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class EventTopic(BaseModel):
+    """Represents a topic under which events are grouped."""
+
+    id: int
+    name: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"EventTopic(id={self.id}, name='{self.name}')"
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class EventSubTopic(BaseModel):
+    """Represents a sub-topic for fine-grained event categorization."""
+
+    id: int
+    name: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"EventSubTopic(id={self.id}, name='{self.name}')"
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class Notification(BaseModel):
+    """Represents a user or system notification."""
+
+    id: int
+    title: Optional[str] = None
+    message: Optional[str] = None
+    is_read: Optional[bool] = None
+    received_at: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"Notification(id={self.id}, title='{self.title}')"
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class Page(BaseModel):
+    """Represents a static content page configuration."""
+
+    id: int
+    name: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"Page(id={self.id}, name='{self.name}')"
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class Service(BaseModel):
+    """Represents an external integration service configuration."""
+
+    id: int
+    name: Optional[str] = None
+    enabled: Optional[bool] = None
+
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"Service(id={self.id}, name='{self.name}', enabled={self.enabled})"
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class TicketTag(BaseModel):
+    """Represents a tag used for categorizing tickets."""
+
+    id: int
+    name: Optional[str] = None
+    color: Optional[str] = None
+    is_active: Optional[bool] = True
+
+    model_config = ConfigDict(extra="ignore")
+
+    def __str__(self):
+        return f"TicketTag(id={self.id}, name='{self.name}')"
+
+    def __repr__(self):
+        return self.__str__()
+
+
 class Order(BaseModel):
     """
     Represents an order (ticket purchase) for an event.
@@ -551,6 +761,69 @@ class EventList(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
 
+class GenericResourceList(BaseModel):
+    """Paginated response containing generic resources."""
+
+    data: List[GenericResource]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class EventTypeList(BaseModel):
+    """Paginated response containing a list of event types."""
+
+    data: List[EventType]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class EventTopicList(BaseModel):
+    """Paginated response containing a list of event topics."""
+
+    data: List[EventTopic]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class EventSubTopicList(BaseModel):
+    """Paginated response containing a list of event sub topics."""
+
+    data: List[EventSubTopic]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class NotificationList(BaseModel):
+    """Paginated response containing a list of notifications."""
+
+    data: List[Notification]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class PageList(BaseModel):
+    """Paginated response containing a list of pages."""
+
+    data: List[Page]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class ServiceList(BaseModel):
+    """Paginated response containing a list of services."""
+
+    data: List[Service]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
 class AttendeeList(BaseModel):
     """Paginated response containing a list of attendees."""
 
@@ -623,6 +896,15 @@ class DiscountCodeList(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
 
+class AccessCodeList(BaseModel):
+    """Paginated response containing a list of access codes."""
+
+    data: List[AccessCode]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
 class OrderList(BaseModel):
     """Paginated response containing a list of orders."""
 
@@ -659,6 +941,15 @@ class RoleList(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
 
+class RoleInviteList(BaseModel):
+    """Paginated response containing a list of role invites."""
+
+    data: List[RoleInvite]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
 class FeedbackList(BaseModel):
     """Paginated response containing a list of feedback entries."""
 
@@ -672,6 +963,15 @@ class SettingList(BaseModel):
     """List of settings returned by the API."""
 
     data: List[Setting]
+    links: Optional[Dict[str, Optional[str]]] = None
+    meta: Optional[Dict[str, Any]] = None
+    model_config = ConfigDict(extra="ignore")
+
+
+class TicketTagList(BaseModel):
+    """Paginated response containing a list of ticket tags."""
+
+    data: List[TicketTag]
     links: Optional[Dict[str, Optional[str]]] = None
     meta: Optional[Dict[str, Any]] = None
     model_config = ConfigDict(extra="ignore")

@@ -46,6 +46,7 @@ setup(
             "flake8>=4.0.0",
             "isort>=5.0.0",
             "mypy>=0.950",
+            "types-requests>=2.31.0.20240406",
         ],
         "docs": [
             "sphinx>=7.0.0",
