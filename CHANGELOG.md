@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Endpoint path validation in transport utilities to block absolute-URL injection attempts, bidi control characters, and unsafe control bytes.
+- Strict JSON:API parsing mode with typed parsing failures via `EventyayParsingError`.
+- Idempotency-key support for write operations across sync and async clients.
+- Additional typed API domains and helpers: access codes, role invites, ticket tags, event types, event topics, event sub topics, notifications, pages, services, auth operations, and operational copy/upload helpers.
+- Broader read/list helper coverage via misc resource endpoints.
+- Optional live contract test workflow and production hardening documentation.
+
+### Changed
+- Default async base URL aligned to `https://api.eventyay.com/v1`.
+- Retry behavior hardened to avoid retries for mutating async methods while preserving retries for safe methods.
+- Mixins now use transport base contracts for stronger static typing and clearer architecture.
+- CI now includes bidi control scanning and mypy type checks.
+
+### Security
+- Bidirectional Unicode control scanning upgraded and enforced as a CI gate.
+- Endpoint composition now validates relative path safety before requests are dispatched.
+
 ## [0.1.0] - 2026-04-10
 
 ### Added

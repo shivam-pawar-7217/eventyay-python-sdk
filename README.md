@@ -9,11 +9,13 @@ A modern, type-safe, asynchronous Python client for the [Eventyay API](https://a
 
 ## 🌟 Features
 
-*   **16 Full API Domains**: Organizers, Events, Attendees, Speakers, Sessions, Tickets, Tracks, Microlocations, Sponsors, DiscountCodes, Orders, Tax, Users, Roles, Feedbacks, and Settings.
+*   **Core + Extended API Domain Coverage**: Full core domains plus additional typed helpers for access codes, role invites, ticket tags, event taxonomy resources, notifications, pages, services, and operational/auth flows.
 *   **Async & Sync**: Full support for both synchronous and asynchronous applications.
 *   **Type Safety**: Returns Pydantic models for excellent IDE support and validation.
 *   **Auto-Pagination**: Helper methods to fetch *all* results automatically.
 *   **Reliability**: Built-in exponential backoff for rate limits and server errors.
+*   **Strict Mode (Optional)**: Enforce strict JSON:API wrappers for teams that prefer fail-fast contracts.
+*   **Idempotency Support**: Write operations accept idempotency keys to reduce duplicate mutation risk.
 *   **CLI Tool**: Includes a powerful command-line interface (`eventyay`) with rich output.
 *   **Error Handling**: Typed exceptions with HTTP status codes and response bodies.
 
@@ -160,6 +162,35 @@ The client automatically retries requests that fail due to:
 
 It uses exponential backoff to be a good API citizen.
 
+### Strict JSON:API Mode (Optional)
+
+Set `strict_jsonapi=True` to enforce JSON:API resource/list wrappers strictly. This is
+useful for CI and production environments that want fail-fast behavior on malformed
+payloads.
+
+```python
+from eventyay import EventyayClient
+
+client = EventyayClient(api_key="YOUR_API_KEY", strict_jsonapi=True)
+events = client.get_events()
+```
+
+### Idempotency Keys For Writes
+
+Mutating operations support `idempotency_key` so API gateways and backend services can
+deduplicate retries safely.
+
+```python
+event = client.create_event(
+    name="FOSSASIA Summit",
+    identifier="fossasia-summit-2026",
+    starts_at="2026-04-01T09:00:00Z",
+    ends_at="2026-04-01T18:00:00Z",
+    timezone="UTC",
+    idempotency_key="evt-create-2026-04-01",
+)
+```
+
 ### Error Handling
 
 ```python
@@ -187,7 +218,7 @@ print(event.starts_at)   # Optional[str]
 print(event.online)      # bool
 ```
 
-All 16 model types are importable from the top level:
+Core model types are importable from the top level:
 
 ```python
 from eventyay import Event, Organizer, Attendee, Speaker, Session, Ticket
