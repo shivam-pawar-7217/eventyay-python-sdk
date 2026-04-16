@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from ._transport import SyncTransportBase
 from .models import EventList, Organizer, OrganizerList
 from .utils import (
     build_jsonapi_payload,
@@ -9,7 +10,7 @@ from .utils import (
 )
 
 
-class OrganizersMixin:
+class OrganizersMixin(SyncTransportBase):
     """
     Mixin class providing methods for interacting with Organizer-related endpoints.
 
@@ -28,8 +29,8 @@ class OrganizersMixin:
             OrganizerList: A Pydantic model containing the list of organizers and pagination metadata.
         """
         params = {"page[number]": page, "page[size]": page_size}
-        response_data = self._get("organizers/", params=params)
-        return OrganizerList(**parse_jsonapi_list(response_data))
+        response_data = self._get("organizers", params=params)
+        return OrganizerList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_all_organizers(self) -> List[Organizer]:
         """
@@ -80,7 +81,7 @@ class OrganizersMixin:
             EventyayNotFoundError: If no organizer is found with the given ID.
         """
         response_data = self._get(f"organizers/{organizer_id}")
-        return Organizer(**parse_jsonapi_resource(response_data))
+        return Organizer(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_organizer_events(self, organizer_id: str, page: int = 1) -> EventList:
         """
@@ -95,7 +96,7 @@ class OrganizersMixin:
         """
         params = {"page[number]": page}
         response_data = self._get(f"organizers/{organizer_id}/events", params=params)
-        return EventList(**parse_jsonapi_list(response_data))
+        return EventList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def create_organizer(
         self,
@@ -103,6 +104,7 @@ class OrganizersMixin:
         description: Optional[str] = None,
         url: Optional[str] = None,
         logo_url: Optional[str] = None,
+        idempotency_key: Optional[str] = None,
     ) -> Organizer:
         """
         Creates a new organizer.
@@ -125,8 +127,12 @@ class OrganizersMixin:
             data["logo_url"] = logo_url
 
         payload = build_jsonapi_payload("organizer", data)
-        response_data = self._post("organizers", json=payload)
-        return Organizer(**parse_jsonapi_resource(response_data))
+        response_data = self._post(
+            "organizers",
+            json=payload,
+            idempotency_key=idempotency_key,
+        )
+        return Organizer(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def update_organizer(
         self,
@@ -135,6 +141,7 @@ class OrganizersMixin:
         description: Optional[str] = None,
         url: Optional[str] = None,
         logo_url: Optional[str] = None,
+        idempotency_key: Optional[str] = None,
     ) -> Organizer:
         """
         Updates an existing organizer's information (Partial updates supported).
@@ -164,8 +171,12 @@ class OrganizersMixin:
             return self.get_organizer(organizer_id)
 
         payload = build_jsonapi_payload("organizer", data, resource_id=str(organizer_id))
-        response_data = self._patch(f"organizers/{organizer_id}", json=payload)
-        return Organizer(**parse_jsonapi_resource(response_data))
+        response_data = self._patch(
+            f"organizers/{organizer_id}",
+            json=payload,
+            idempotency_key=idempotency_key,
+        )
+        return Organizer(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def delete_organizer(self, organizer_id: str) -> bool:
         """

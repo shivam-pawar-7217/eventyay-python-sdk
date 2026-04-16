@@ -1,10 +1,11 @@
 from typing import Any, Optional
 
+from ._transport import SyncTransportBase
 from .models import Setting, SettingList
 from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
-class SettingsMixin:
+class SettingsMixin(SyncTransportBase):
     """
     Mixin for Eventyay settings operations.
     Should be inherited by the main EventyayClient.
@@ -34,7 +35,7 @@ class SettingsMixin:
             params["page[size]"] = page_size
 
         response_data = self._get("settings", params=params)
-        return SettingList(**parse_jsonapi_list(response_data))
+        return SettingList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_setting(self, setting_id: str, **kwargs: Any) -> Setting:
         """
@@ -48,4 +49,4 @@ class SettingsMixin:
             Setting: The setting details.
         """
         response_data = self._get(f"settings/{setting_id}", params=kwargs)
-        return Setting(**parse_jsonapi_resource(response_data))
+        return Setting(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))

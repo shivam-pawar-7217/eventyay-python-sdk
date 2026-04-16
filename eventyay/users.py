@@ -1,10 +1,11 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
+from ._transport import SyncTransportBase
 from .models import User, UserList
 from .utils import build_jsonapi_payload, parse_jsonapi_list, parse_jsonapi_resource
 
 
-class UsersMixin:
+class UsersMixin(SyncTransportBase):
     """
     Mixin for User-related API endpoints.
     Requires self._get() and self._patch() to be provided by the central client.
@@ -24,7 +25,7 @@ class UsersMixin:
         """
         params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get("users", params=params)
-        return UserList(**parse_jsonapi_list(response_data))
+        return UserList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_all_users(self) -> list[User]:
         """
@@ -57,9 +58,14 @@ class UsersMixin:
             User: A parsed Pydantic `User` object.
         """
         response_data = self._get(f"users/{user_id}")
-        return User(**parse_jsonapi_resource(response_data))
+        return User(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
-    def update_user(self, user_id: str, payload: Dict[str, Any]) -> User:
+    def update_user(
+        self,
+        user_id: str,
+        payload: Dict[str, Any],
+        idempotency_key: Optional[str] = None,
+    ) -> User:
         """
         Updates a specific user's details.
 
@@ -71,5 +77,9 @@ class UsersMixin:
             User: The updated `User` object.
         """
         payload_wrap = build_jsonapi_payload("user", payload, resource_id=str(user_id))
-        response_data = self._patch(f"users/{user_id}", json=payload_wrap)
-        return User(**parse_jsonapi_resource(response_data))
+        response_data = self._patch(
+            f"users/{user_id}",
+            json=payload_wrap,
+            idempotency_key=idempotency_key,
+        )
+        return User(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))

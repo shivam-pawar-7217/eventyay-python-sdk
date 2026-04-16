@@ -7,7 +7,8 @@ as well as accessing event sub-resources (attendees, sessions, speakers).
 
 from typing import List, Optional
 
-from .models import AttendeeList, Event, EventList, SessionList, SpeakerList
+from ._transport import SyncTransportBase
+from .models import Event, EventList, SessionList, SpeakerList
 from .utils import (
     build_jsonapi_payload,
     parse_jsonapi_list,
@@ -16,7 +17,7 @@ from .utils import (
 )
 
 
-class EventsMixin:
+class EventsMixin(SyncTransportBase):
     """
     Mixin class providing methods for interacting with Event-related endpoints.
 
@@ -35,8 +36,8 @@ class EventsMixin:
             EventList: A Pydantic model containing the list of events and pagination metadata.
         """
         params = {"page[number]": page, "page[size]": page_size}
-        response_data = self._get("events/", params=params)
-        parsed = parse_jsonapi_list(response_data)
+        response_data = self._get("events", params=params)
+        parsed = parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False))
         return EventList(**parsed)
 
     def get_all_events(self) -> List[Event]:
@@ -87,27 +88,8 @@ class EventsMixin:
             EventyayNotFoundError: If no event is found with the given ID.
         """
         response_data = self._get(f"events/{event_id}")
-        parsed = parse_jsonapi_resource(response_data)
+        parsed = parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False))
         return Event(**parsed)
-
-    def get_event_attendees(
-        self, event_id: str, page: int = 1, page_size: int = 10
-    ) -> AttendeeList:
-        """
-        Retrieves a paginated list of attendees for a specific event.
-
-        Args:
-            event_id (str): The unique identifier of the event.
-            page (int, optional): The page number to retrieve. Defaults to 1.
-            page_size (int, optional): The number of attendees per page. Defaults to 10.
-
-        Returns:
-            AttendeeList: A Pydantic model containing the list of attendees.
-        """
-        params = {"page[number]": page, "page[size]": page_size}
-        response_data = self._get(f"events/{event_id}/attendees", params=params)
-        parsed = parse_jsonapi_list(response_data)
-        return AttendeeList(**parsed)
 
     def get_event_sessions(self, event_id: str, page: int = 1) -> SessionList:
         """
@@ -122,7 +104,7 @@ class EventsMixin:
         """
         params = {"page[number]": page}
         response_data = self._get(f"events/{event_id}/sessions", params=params)
-        parsed = parse_jsonapi_list(response_data)
+        parsed = parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False))
         return SessionList(**parsed)
 
     def get_event_speakers(self, event_id: str, page: int = 1) -> SpeakerList:
@@ -138,7 +120,7 @@ class EventsMixin:
         """
         params = {"page[number]": page}
         response_data = self._get(f"events/{event_id}/speakers", params=params)
-        parsed = parse_jsonapi_list(response_data)
+        parsed = parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False))
         return SpeakerList(**parsed)
 
     def create_event(
@@ -151,6 +133,7 @@ class EventsMixin:
         privacy: str = "public",
         location_name: Optional[str] = None,
         online: bool = False,
+        idempotency_key: Optional[str] = None,
     ) -> Event:
         """
         Creates a new event.
@@ -181,8 +164,8 @@ class EventsMixin:
             attributes["location_name"] = location_name
 
         payload = build_jsonapi_payload("event", attributes)
-        response_data = self._post("events", json=payload)
-        parsed = parse_jsonapi_resource(response_data)
+        response_data = self._post("events", json=payload, idempotency_key=idempotency_key)
+        parsed = parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False))
         return Event(**parsed)
 
     def update_event(
@@ -194,6 +177,7 @@ class EventsMixin:
         timezone: Optional[str] = None,
         privacy: Optional[str] = None,
         location_name: Optional[str] = None,
+        idempotency_key: Optional[str] = None,
     ) -> Event:
         """
         Updates an existing event.
@@ -228,8 +212,12 @@ class EventsMixin:
             return self.get_event(event_id)
 
         payload = build_jsonapi_payload("event", attributes, resource_id=str(event_id))
-        response_data = self._patch(f"events/{event_id}", json=payload)
-        parsed = parse_jsonapi_resource(response_data)
+        response_data = self._patch(
+            f"events/{event_id}",
+            json=payload,
+            idempotency_key=idempotency_key,
+        )
+        parsed = parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False))
         return Event(**parsed)
 
     def delete_event(self, event_id: int) -> bool:
