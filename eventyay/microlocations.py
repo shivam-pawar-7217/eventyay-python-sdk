@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import Microlocation, MicrolocationList
 from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
-class MicrolocationsMixin:
+class MicrolocationsMixin(SyncTransportBase):
     """
     Mixin class for interacting with Microlocation-related endpoints.
 
@@ -25,7 +26,7 @@ class MicrolocationsMixin:
         """
         params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_identifier}/microlocations", params=params)
-        return MicrolocationList(**parse_jsonapi_list(response_data))
+        return MicrolocationList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_microlocation(self, event_identifier: str, microlocation_id: str) -> Microlocation:
         """
@@ -39,4 +40,4 @@ class MicrolocationsMixin:
             Microlocation: The detailed Microlocation object.
         """
         response_data = self._get(f"events/{event_identifier}/microlocations/{microlocation_id}")
-        return Microlocation(**parse_jsonapi_resource(response_data))
+        return Microlocation(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))

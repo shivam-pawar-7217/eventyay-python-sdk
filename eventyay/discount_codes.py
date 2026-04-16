@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import DiscountCode, DiscountCodeList
 from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
-class DiscountCodesMixin:
+class DiscountCodesMixin(SyncTransportBase):
     """
     Mixin class for interacting with DiscountCode-related endpoints.
 
@@ -25,7 +26,7 @@ class DiscountCodesMixin:
         """
         params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_identifier}/discount-codes", params=params)
-        return DiscountCodeList(**parse_jsonapi_list(response_data))
+        return DiscountCodeList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_discount_code(self, event_identifier: str, code_id: str) -> DiscountCode:
         """
@@ -39,4 +40,4 @@ class DiscountCodesMixin:
             DiscountCode: The detailed DiscountCode object.
         """
         response_data = self._get(f"events/{event_identifier}/discount-codes/{code_id}")
-        return DiscountCode(**parse_jsonapi_resource(response_data))
+        return DiscountCode(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))

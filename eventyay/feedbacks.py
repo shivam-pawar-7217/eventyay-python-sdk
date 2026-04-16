@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import Feedback, FeedbackList
 from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
-class FeedbacksMixin:
+class FeedbacksMixin(SyncTransportBase):
     """
     Mixin for Feedback-related API endpoints.
     Requires self._get() to be provided by the central client.
@@ -24,7 +25,7 @@ class FeedbacksMixin:
         """
         params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_id}/feedbacks", params=params)
-        return FeedbackList(**parse_jsonapi_list(response_data))
+        return FeedbackList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_feedback(self, event_id: str, feedback_id: str) -> Feedback:
         """
@@ -38,4 +39,4 @@ class FeedbacksMixin:
             Feedback: A parsed Pydantic `Feedback` object.
         """
         response_data = self._get(f"events/{event_id}/feedbacks/{feedback_id}")
-        return Feedback(**parse_jsonapi_resource(response_data))
+        return Feedback(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))
