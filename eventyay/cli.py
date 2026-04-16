@@ -9,7 +9,7 @@ CRUD for events and organizers, and machine-readable JSON output.
 import json
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 
 import typer
 from rich.console import Console
@@ -58,7 +58,8 @@ def _resolve_api_key() -> Optional[str]:
         try:
             with open(CONFIG_FILE, "r") as f:
                 config = json.load(f)
-                return config.get("api_key")
+                if isinstance(config, dict):
+                    return cast(Optional[str], config.get("api_key"))
         except Exception:
             pass
 
