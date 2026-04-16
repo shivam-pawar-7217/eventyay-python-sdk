@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import Attendee, AttendeeList
 from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
-class AttendeesMixin:
+class AttendeesMixin(SyncTransportBase):
     """
     Mixin class providing methods for interacting with Attendee-related endpoints.
 
@@ -25,7 +26,7 @@ class AttendeesMixin:
         """
         params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_identifier}/attendees", params=params)
-        return AttendeeList(**parse_jsonapi_list(response_data))
+        return AttendeeList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_attendee(self, event_identifier: str, attendee_id: str) -> Attendee:
         """
@@ -39,4 +40,4 @@ class AttendeesMixin:
             Attendee: The detailed Attendee object.
         """
         response_data = self._get(f"events/{event_identifier}/attendees/{attendee_id}")
-        return Attendee(**parse_jsonapi_resource(response_data))
+        return Attendee(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))

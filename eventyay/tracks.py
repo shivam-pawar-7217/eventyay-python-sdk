@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import Track, TrackList
 from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
-class TracksMixin:
+class TracksMixin(SyncTransportBase):
     """
     Mixin class providing methods for interacting with Track-related endpoints.
 
@@ -26,7 +27,7 @@ class TracksMixin:
         """
         params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_identifier}/tracks", params=params)
-        return TrackList(**parse_jsonapi_list(response_data))
+        return TrackList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_track(self, event_identifier: str, track_id: str) -> Track:
         """
@@ -40,4 +41,4 @@ class TracksMixin:
             Track: The detailed Track object.
         """
         response_data = self._get(f"events/{event_identifier}/tracks/{track_id}")
-        return Track(**parse_jsonapi_resource(response_data))
+        return Track(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))

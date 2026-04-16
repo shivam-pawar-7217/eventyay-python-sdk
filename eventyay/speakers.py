@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import Speaker
 from .utils import parse_jsonapi_resource
 
 
-class SpeakersMixin:
+class SpeakersMixin(SyncTransportBase):
     """
     Mixin class providing methods for interacting with standalone Speaker endpoints.
 
@@ -21,4 +22,4 @@ class SpeakersMixin:
             Speaker: The detailed Speaker object.
         """
         response_data = self._get(f"events/{event_identifier}/speakers/{speaker_id}")
-        return Speaker(**parse_jsonapi_resource(response_data))
+        return Speaker(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))

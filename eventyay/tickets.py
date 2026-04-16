@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import Ticket, TicketList
 from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
-class TicketsMixin:
+class TicketsMixin(SyncTransportBase):
     """
     Mixin class providing methods for interacting with Ticket-related endpoints.
 
@@ -25,7 +26,7 @@ class TicketsMixin:
         """
         params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_identifier}/tickets", params=params)
-        return TicketList(**parse_jsonapi_list(response_data))
+        return TicketList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_ticket(self, event_identifier: str, ticket_id: str) -> Ticket:
         """
@@ -42,4 +43,4 @@ class TicketsMixin:
             EventyayNotFoundError: If no ticket is found with the given ID.
         """
         response_data = self._get(f"events/{event_identifier}/tickets/{ticket_id}")
-        return Ticket(**parse_jsonapi_resource(response_data))
+        return Ticket(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))
