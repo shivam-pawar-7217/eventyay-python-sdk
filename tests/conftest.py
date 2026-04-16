@@ -67,6 +67,58 @@ def sample_event():
 
 
 @pytest.fixture
+def sample_event_type():
+    return {"id": 1601, "name": "conference"}
+
+
+@pytest.fixture
+def sample_event_topic():
+    return {"id": 1602, "name": "technology"}
+
+
+@pytest.fixture
+def sample_event_sub_topic():
+    return {"id": 1603, "name": "python"}
+
+
+@pytest.fixture
+def sample_notification():
+    return {
+        "id": 1701,
+        "title": "Welcome",
+        "message": "Welcome to Eventyay",
+        "is_read": False,
+    }
+
+
+@pytest.fixture
+def sample_page():
+    return {
+        "id": 1702,
+        "name": "about",
+        "title": "About Eventyay",
+        "description": "About page",
+    }
+
+
+@pytest.fixture
+def sample_service():
+    return {
+        "id": 1703,
+        "name": "stripe",
+        "enabled": True,
+    }
+
+
+@pytest.fixture
+def sample_generic_resource():
+    return {
+        "id": 1901,
+        "name": "generic-resource",
+    }
+
+
+@pytest.fixture
 def sample_attendee():
     return {
         "id": 101,
@@ -127,6 +179,16 @@ def sample_discount_code():
 
 
 @pytest.fixture
+def sample_access_code():
+    return {
+        "id": 851,
+        "code": "VIPACCESS",
+        "is_active": True,
+        "tickets_number": 100,
+    }
+
+
+@pytest.fixture
 def sample_order():
     return {
         "id": 901,
@@ -156,6 +218,26 @@ def sample_user():
 @pytest.fixture
 def sample_role():
     return {"id": 1201, "name": "organizer", "title_name": "Event Organizer"}
+
+
+@pytest.fixture
+def sample_role_invite():
+    return {
+        "id": 1251,
+        "email": "organizer@example.com",
+        "token": "invite-token-123",
+        "status": "pending",
+    }
+
+
+@pytest.fixture
+def sample_ticket_tag():
+    return {
+        "id": 1451,
+        "name": "VIP",
+        "color": "#ff8800",
+        "is_active": True,
+    }
 
 
 @pytest.fixture
