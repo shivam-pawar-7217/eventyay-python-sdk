@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import Order, OrderList
 from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
-class OrdersMixin:
+class OrdersMixin(SyncTransportBase):
     """
     Mixin class for interacting with Order-related endpoints.
 
@@ -25,7 +26,7 @@ class OrdersMixin:
         """
         params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_identifier}/orders", params=params)
-        return OrderList(**parse_jsonapi_list(response_data))
+        return OrderList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_order(self, event_identifier: str, order_identifier: str) -> Order:
         """
@@ -39,4 +40,4 @@ class OrdersMixin:
             Order: The detailed Order object.
         """
         response_data = self._get(f"events/{event_identifier}/orders/{order_identifier}")
-        return Order(**parse_jsonapi_resource(response_data))
+        return Order(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))

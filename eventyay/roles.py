@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import Role, RoleList
 from .utils import parse_jsonapi_list, parse_jsonapi_resource
 
 
-class RolesMixin:
+class RolesMixin(SyncTransportBase):
     """
     Mixin for Role-related API endpoints.
     Requires self._get() to be provided by the central client.
@@ -22,7 +23,7 @@ class RolesMixin:
         """
         params = {"page[number]": page, "page[size]": page_size}
         response_data = self._get(f"events/{event_id}/roles", params=params)
-        return RoleList(**parse_jsonapi_list(response_data))
+        return RoleList(**parse_jsonapi_list(response_data, strict=getattr(self, "strict_jsonapi", False)))
 
     def get_role(self, event_id: str, role_id: str) -> Role:
         """
@@ -36,4 +37,4 @@ class RolesMixin:
             Role: A parsed Pydantic `Role` object.
         """
         response_data = self._get(f"events/{event_id}/roles/{role_id}")
-        return Role(**parse_jsonapi_resource(response_data))
+        return Role(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))

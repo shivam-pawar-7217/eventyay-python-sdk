@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import Tax
 from .utils import parse_jsonapi_resource
 
 
-class TaxMixin:
+class TaxMixin(SyncTransportBase):
     """
     Mixin class for interacting with Tax-related endpoints.
 
@@ -20,4 +21,4 @@ class TaxMixin:
             Tax: The tax configuration object.
         """
         response_data = self._get(f"events/{event_identifier}/tax")
-        return Tax(**parse_jsonapi_resource(response_data))
+        return Tax(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))

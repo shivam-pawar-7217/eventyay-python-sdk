@@ -1,8 +1,9 @@
+from ._transport import SyncTransportBase
 from .models import Session
 from .utils import parse_jsonapi_resource
 
 
-class SessionsMixin:
+class SessionsMixin(SyncTransportBase):
     """
     Mixin class providing methods for interacting with standalone Session endpoints.
 
@@ -21,4 +22,4 @@ class SessionsMixin:
             Session: The detailed Session object.
         """
         response_data = self._get(f"events/{event_identifier}/sessions/{session_id}")
-        return Session(**parse_jsonapi_resource(response_data))
+        return Session(**parse_jsonapi_resource(response_data, strict=getattr(self, "strict_jsonapi", False)))
