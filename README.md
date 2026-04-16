@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-A modern, type-safe, asynchronous Python client for the [Eventyay API](https://api.eventyay.com/).
+A modern, type-safe Python SDK (sync + async) for the [Eventyay API](https://api.eventyay.com/).
 
 ## 🌟 Features
 
@@ -15,8 +15,10 @@ A modern, type-safe, asynchronous Python client for the [Eventyay API](https://a
 *   **Auto-Pagination**: Helper methods to fetch *all* results automatically.
 *   **Reliability**: Built-in exponential backoff for rate limits and server errors.
 *   **Strict Mode (Optional)**: Enforce strict JSON:API wrappers for teams that prefer fail-fast contracts.
+*   **Endpoint Hardening**: Validates endpoint paths against URL-injection and control-character abuse.
 *   **Idempotency Support**: Write operations accept idempotency keys to reduce duplicate mutation risk.
 *   **CLI Tool**: Includes a powerful command-line interface (`eventyay`) with rich output.
+*   **Security Gate**: Includes a bidirectional-Unicode scan in CI to block Trojan-source style risks.
 *   **Error Handling**: Typed exceptions with HTTP status codes and response bodies.
 
 ## 📦 Installation
@@ -33,6 +35,8 @@ pip install eventyay[dev]
 ## 🖥️ CLI Usage
 
 The SDK comes with a command-line tool `eventyay` to manage resources directly from your terminal.
+
+CLI scope is intentionally focused on common day-to-day workflows. The Python SDK clients expose broader programmatic coverage.
 
 ### Authentication
 
@@ -73,7 +77,7 @@ eventyay events update <id> --name "Updated Name"
 eventyay events delete <id>
 ```
 
-### All Supported Resources
+### Common CLI Resources
 
 ```bash
 # Organizers (CRUD)
@@ -242,6 +246,25 @@ pip install -e ".[dev]"
 pytest tests/ -v --cov=eventyay
 ```
 
+### Validation Checklist
+
+```bash
+# 1) Test suite
+pytest -q
+
+# 2) Type checks
+mypy --config-file pyproject.toml eventyay
+
+# 3) Lint (blocking)
+flake8 eventyay tests --count --exclude=.venv,venv --select=E9,F63,F7,F82 --show-source --statistics
+
+# 4) Lint (warning pass)
+flake8 eventyay tests --count --exclude=.venv,venv --max-complexity=10 --max-line-length=127 --statistics
+
+# 5) Security scan (bidirectional Unicode controls)
+python bidi_check.py
+```
+
 ### Code Style
 
 ```bash
@@ -260,4 +283,4 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file.
