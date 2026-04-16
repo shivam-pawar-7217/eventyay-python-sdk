@@ -1,5 +1,7 @@
 """Tests for JSON:API parsing utilities."""
 
+import pytest
+
 from eventyay.utils import (
     _convert_keys,
     build_jsonapi_payload,
@@ -10,6 +12,7 @@ from eventyay.utils import (
     parse_pagination_params,
     snake_to_dasherized,
 )
+from eventyay.exceptions import EventyayParsingError
 
 
 class TestDasherizedToSnake:
@@ -88,6 +91,12 @@ class TestParseJsonapiResource:
         assert result["id"] == 1
         assert result["name"] == "Test"
 
+    def test_strict_mode_rejects_missing_attributes(self):
+        response = {"data": {"id": 1, "name": "Test"}}
+
+        with pytest.raises(EventyayParsingError):
+            parse_jsonapi_resource(response, strict=True)
+
 
 class TestParseJsonapiList:
     def test_parses_jsonapi_list_response(self):
@@ -141,6 +150,12 @@ class TestParseJsonapiList:
 
         assert len(result["data"]) == 2
         assert result["data"][0]["name"] == "Event One"
+
+    def test_strict_mode_rejects_items_without_attributes(self):
+        response = {"data": [{"id": 1, "name": "Event One"}]}
+
+        with pytest.raises(EventyayParsingError):
+            parse_jsonapi_list(response, strict=True)
 
 
 class TestBuildJsonapiPayload:

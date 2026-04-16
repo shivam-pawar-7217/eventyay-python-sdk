@@ -34,6 +34,29 @@ class TestWriteOperations:
         args, kwargs = mock_client.session.patch.call_args
         assert "events/1" in args[0]
 
+    def test_post_supports_idempotency_key(self, mock_client, mock_response, sample_event):
+        mock_client.session.post.return_value = mock_response(sample_event)
+
+        mock_client.create_event(
+            name="Test",
+            identifier="test",
+            starts_at="2026-01-01T00:00:00Z",
+            ends_at="2026-01-02T00:00:00Z",
+            timezone="UTC",
+            idempotency_key="idem-123",
+        )
+
+        _, kwargs = mock_client.session.post.call_args
+        assert kwargs["headers"]["Idempotency-Key"] == "idem-123"
+
+    def test_patch_supports_idempotency_key(self, mock_client, mock_response, sample_event):
+        mock_client.session.patch.return_value = mock_response(sample_event)
+
+        mock_client.update_event(event_id=1, name="Updated", idempotency_key="idem-456")
+
+        _, kwargs = mock_client.session.patch.call_args
+        assert kwargs["headers"]["Idempotency-Key"] == "idem-456"
+
     def test_delete_uses_correct_method(self, mock_client):
         response = Mock()
         response.status_code = 204

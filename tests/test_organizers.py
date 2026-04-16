@@ -24,6 +24,14 @@ class TestGetOrganizers:
         assert kwargs["params"]["page[number]"] == 3
         assert kwargs["params"]["page[size]"] == 25
 
+    def test_calls_non_trailing_slash_endpoint(self, mock_client, mock_response, sample_organizer):
+        mock_client.session.get.return_value = mock_response({"data": [sample_organizer]})
+
+        mock_client.get_organizers()
+
+        args, _ = mock_client.session.get.call_args
+        assert args[0].endswith("/organizers")
+
 
 class TestGetOrganizer:
     def test_returns_organizer(self, mock_client, mock_response, sample_organizer):

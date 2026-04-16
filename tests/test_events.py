@@ -44,6 +44,32 @@ class TestGetEvents:
         assert kwargs["params"]["page[number]"] == 2
         assert kwargs["params"]["page[size]"] == 20
 
+    def test_calls_non_trailing_slash_endpoint(self, mock_client, mock_response, sample_event):
+        mock_client.session.get.return_value = mock_response({"data": [sample_event]})
+
+        mock_client.get_events()
+
+        args, _ = mock_client.session.get.call_args
+        assert args[0].endswith("/events")
+
+    def test_nullable_boolean_fields_are_coerced(self, mock_client, mock_response, sample_event):
+        event_with_null_bools = {
+            **sample_event,
+            "stream_loop": None,
+            "stream_autoplay": None,
+            "is_badges_enabled": None,
+            "is_ticket_form_enabled": None,
+        }
+        mock_client.session.get.return_value = mock_response({"data": [event_with_null_bools]})
+
+        result = mock_client.get_events()
+
+        event = result.data[0]
+        assert event.stream_loop is False
+        assert event.stream_autoplay is False
+        assert event.is_badges_enabled is True
+        assert event.is_ticket_form_enabled is True
+
 
 class TestGetAllEvents:
     def test_fetches_all_pages(self, mock_client, mock_response, sample_event):
