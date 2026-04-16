@@ -6,15 +6,20 @@ Provides synchronous access with automatic retries, error mapping,
 JSON:API response parsing, and configurable timeouts.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, NoReturn, Optional, cast
 
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from .attendees import AttendeesMixin
+from .access_codes import AccessCodesMixin
+from .auth import AuthMixin
 from .discount_codes import DiscountCodesMixin
 from .events import EventsMixin
+from .event_sub_topics import EventSubTopicsMixin
+from .event_topics import EventTopicsMixin
+from .event_types import EventTypesMixin
 from .exceptions import (
     EventyayAPIError,
     EventyayAuthenticationError,
@@ -26,23 +31,36 @@ from .exceptions import (
 )
 from .feedbacks import FeedbacksMixin
 from .microlocations import MicrolocationsMixin
+from .misc_resources import MiscResourcesMixin
+from .notifications import NotificationsMixin
 from .orders import OrdersMixin
+from .operations import OperationsMixin
 from .organizers import OrganizersMixin
+from .pages import PagesMixin
+from .role_invites import RoleInvitesMixin
 from .roles import RolesMixin
 from .sessions import SessionsMixin
+from .services import ServicesMixin
 from .settings import SettingsMixin
 from .speakers import SpeakersMixin
 from .sponsors import SponsorsMixin
 from .tax import TaxMixin
 from .tickets import TicketsMixin
+from .ticket_tags import TicketTagsMixin
 from .tracks import TracksMixin
 from .users import UsersMixin
+from .utils import validate_endpoint_path
 
 
 class EventyayClient(
+    AuthMixin,
     OrganizersMixin,
     EventsMixin,
+    EventTypesMixin,
+    EventTopicsMixin,
+    EventSubTopicsMixin,
     TicketsMixin,
+    TicketTagsMixin,
     AttendeesMixin,
     SpeakersMixin,
     SessionsMixin,
@@ -50,12 +68,19 @@ class EventyayClient(
     MicrolocationsMixin,
     SponsorsMixin,
     DiscountCodesMixin,
+    AccessCodesMixin,
+    NotificationsMixin,
+    PagesMixin,
+    ServicesMixin,
     OrdersMixin,
     TaxMixin,
     UsersMixin,
     RolesMixin,
+    RoleInvitesMixin,
     FeedbacksMixin,
     SettingsMixin,
+    MiscResourcesMixin,
+    OperationsMixin,
 ):
     """
     The primary entry point for interacting with the Eventyay REST API.
@@ -94,6 +119,7 @@ class EventyayClient(
         auth_mode: str = "token",
         timeout: int = 30,
         max_retries: int = 3,
+        strict_jsonapi: bool = False,
     ):
         """
         Initializes the EventyayClient.
@@ -108,11 +134,14 @@ class EventyayClient(
             timeout (int, optional): Request timeout in seconds. Defaults to 30.
             max_retries (int, optional): Maximum retry attempts for failed requests.
                 Defaults to 3.
+            strict_jsonapi (bool, optional): Enforce strict JSON:API wrapper shape
+                in parser utilities. Defaults to False.
         """
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.auth_mode = auth_mode.lower()
         self.timeout = timeout
+        self.strict_jsonapi = strict_jsonapi
         self.session = requests.Session()
 
         # Configure Retries (Reliability)
@@ -167,7 +196,13 @@ class EventyayClient(
     def _safe_json(self, response: requests.Response) -> Dict[str, Any]:
         """Parse successful response JSON and raise a typed SDK error on malformed bodies."""
         try:
-            return response.json()
+            data = response.json()
+            if not isinstance(data, dict):
+                raise EventyayAPIError(
+                    "Server returned a non-object JSON payload in a successful response.",
+                    status_code=response.status_code,
+                )
+            return cast(Dict[str, Any], data)
         except ValueError as e:
             raise EventyayAPIError(
                 "Server returned malformed JSON in a successful response.",
@@ -190,7 +225,8 @@ class EventyayClient(
             EventyayAuthenticationError: If the API key is missing or invalid.
             EventyayNotFoundError: If the requested resource does not exist.
         """
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        safe_endpoint = validate_endpoint_path(endpoint)
+        url = f"{self.base_url}/{safe_endpoint}"
 
         try:
             response = self.session.get(url, params=params, timeout=self.timeout)
@@ -209,21 +245,29 @@ class EventyayClient(
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
 
-    def _post(self, endpoint: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _post(
+        self,
+        endpoint: str,
+        json: Optional[Dict[str, Any]] = None,
+        idempotency_key: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Performs a POST request to a specified endpoint.
 
         Args:
             endpoint (str): The API endpoint path.
             json (dict, optional): The JSON payload for the request.
+            idempotency_key (str, optional): Value for the `Idempotency-Key` header.
 
         Returns:
             Dict[str, Any]: The parsed JSON response data.
         """
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        safe_endpoint = validate_endpoint_path(endpoint)
+        url = f"{self.base_url}/{safe_endpoint}"
+        headers = {"Idempotency-Key": idempotency_key} if idempotency_key else None
 
         try:
-            response = self.session.post(url, json=json, timeout=self.timeout)
+            response = self.session.post(url, json=json, timeout=self.timeout, headers=headers)
             response.raise_for_status()
             return self._safe_json(response)
         except requests.exceptions.HTTPError as e:
@@ -239,7 +283,12 @@ class EventyayClient(
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
 
-    def _patch(self, endpoint: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _patch(
+        self,
+        endpoint: str,
+        json: Optional[Dict[str, Any]] = None,
+        idempotency_key: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Performs a PATCH request to a specified endpoint.
 
@@ -250,10 +299,12 @@ class EventyayClient(
         Returns:
             Dict[str, Any]: The parsed JSON response data.
         """
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        safe_endpoint = validate_endpoint_path(endpoint)
+        url = f"{self.base_url}/{safe_endpoint}"
+        headers = {"Idempotency-Key": idempotency_key} if idempotency_key else None
 
         try:
-            response = self.session.patch(url, json=json, timeout=self.timeout)
+            response = self.session.patch(url, json=json, timeout=self.timeout, headers=headers)
             response.raise_for_status()
             return self._safe_json(response)
         except requests.exceptions.HTTPError as e:
@@ -279,7 +330,8 @@ class EventyayClient(
         Raises:
             EventyayAPIError: If deletion fails.
         """
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        safe_endpoint = validate_endpoint_path(endpoint)
+        url = f"{self.base_url}/{safe_endpoint}"
 
         try:
             response = self.session.delete(url, timeout=self.timeout)
@@ -300,7 +352,7 @@ class EventyayClient(
         except requests.exceptions.RequestException as e:
             raise EventyayAPIError(f"Request failed: {str(e)}")
 
-    def _handle_error(self, response: requests.Response) -> None:
+    def _handle_error(self, response: requests.Response) -> NoReturn:
         """
         Maps HTTP error responses to SDK-specific exceptions.
 

@@ -5,8 +5,25 @@ Helper functions for API response parsing, pagination, and data transformation.
 Includes JSON:API specification support for dasherized field name conversion.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 from urllib.parse import parse_qs, urlparse
+
+from .exceptions import EventyayParsingError, EventyayValidationError
+
+
+BIDI_CONTROL_CHARS = frozenset(
+    {
+        "\u202A",  # LRE
+        "\u202B",  # RLE
+        "\u202D",  # LRO
+        "\u202E",  # RLO
+        "\u2066",  # LRI
+        "\u2067",  # RLI
+        "\u2068",  # FSI
+        "\u202C",  # PDF
+        "\u2069",  # PDI
+    }
+)
 
 
 def dasherized_to_snake(key: str) -> str:
@@ -39,7 +56,7 @@ def snake_to_dasherized(key: str) -> str:
     return key.replace("_", "-")
 
 
-def parse_jsonapi_resource(response_data: Dict[str, Any]) -> Dict[str, Any]:
+def parse_jsonapi_resource(response_data: Dict[str, Any], strict: bool = False) -> Dict[str, Any]:
     """
     Parse a single JSON:API resource into a flat dictionary.
 
@@ -71,29 +88,26 @@ def parse_jsonapi_resource(response_data: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         A flat dictionary with snake_case keys ready for Pydantic model construction.
     """
-    # If response has 'data' key with 'attributes', it's JSON:API format
-    if "data" in response_data and isinstance(response_data["data"], dict):
-        data = response_data["data"]
+    if not isinstance(response_data, dict):
+        if strict:
+            raise EventyayParsingError("Expected top-level response object to be a dictionary.")
+        return cast(Dict[str, Any], response_data)
 
-        # JSON:API resource object has 'type', 'id', 'attributes'
-        if "attributes" in data:
-            result = _convert_keys(data["attributes"])
-            # Include the id from the resource object
-            if "id" in data:
-                try:
-                    result["id"] = int(data["id"])
-                except (ValueError, TypeError):
-                    result["id"] = data["id"]
-            return result
-        else:
-            # It's a {"data": {...}} wrapper without attributes (our old format)
-            return _convert_keys(data)
+    parsed = _try_parse_resource_wrapper(response_data, strict)
+    if parsed is not None:
+        return parsed
+
+    if "data" in response_data and strict:
+        raise EventyayParsingError("Strict JSON:API mode expects 'data' to be a resource object.")
+
+    if strict:
+        raise EventyayParsingError("Strict JSON:API mode requires a top-level 'data' wrapper.")
 
     # Plain dict response (no 'data' wrapper) — backward compatible
-    return _convert_keys(response_data)
+    return cast(Dict[str, Any], _convert_keys(response_data))
 
 
-def parse_jsonapi_list(response_data: Dict[str, Any]) -> Dict[str, Any]:
+def parse_jsonapi_list(response_data: Dict[str, Any], strict: bool = False) -> Dict[str, Any]:
     """
     Parse a JSON:API list response into a format compatible with our List models.
 
@@ -125,29 +139,23 @@ def parse_jsonapi_list(response_data: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         A dictionary with 'data' (list of flat dicts), 'links', and 'meta'.
     """
+    if not isinstance(response_data, dict):
+        if strict:
+            raise EventyayParsingError("Expected top-level list response object to be a dictionary.")
+        return cast(Dict[str, Any], response_data)
+
     if "data" not in response_data:
-        return response_data
+        if strict:
+            raise EventyayParsingError("Strict JSON:API mode requires a top-level 'data' wrapper.")
+        return cast(Dict[str, Any], response_data)
 
     data = response_data["data"]
 
     # If data is a list, parse each item
     if isinstance(data, list):
-        parsed_items = []
-        for item in data:
-            if isinstance(item, dict) and "attributes" in item:
-                # JSON:API resource object
-                flat = _convert_keys(item["attributes"])
-                if "id" in item:
-                    try:
-                        flat["id"] = int(item["id"])
-                    except (ValueError, TypeError):
-                        flat["id"] = item["id"]
-                parsed_items.append(flat)
-            else:
-                # Already a flat dict
-                parsed_items.append(_convert_keys(item) if isinstance(item, dict) else item)
+        parsed_items: list[Any] = [_parse_jsonapi_list_item(item, strict) for item in data]
 
-        result = {"data": parsed_items}
+        result: Dict[str, Any] = {"data": parsed_items}
 
         # Preserve pagination links and meta
         if "links" in response_data:
@@ -159,7 +167,61 @@ def parse_jsonapi_list(response_data: Dict[str, Any]) -> Dict[str, Any]:
 
     # data is a single resource (not a list) — shouldn't happen for list endpoints
     # but handle gracefully
-    return response_data
+    if strict:
+        raise EventyayParsingError("Strict JSON:API mode requires 'data' to be a list response.")
+    return cast(Dict[str, Any], response_data)
+
+
+def _try_parse_resource_wrapper(
+    response_data: Dict[str, Any], strict: bool
+) -> Optional[Dict[str, Any]]:
+    """Return parsed resource when a JSON:API-style data wrapper exists, otherwise None."""
+    if "data" not in response_data or not isinstance(response_data["data"], dict):
+        return None
+
+    data = response_data["data"]
+    if "attributes" in data:
+        attributes = data["attributes"]
+        if strict and not isinstance(attributes, dict):
+            raise EventyayParsingError("Expected JSON:API resource 'attributes' to be an object.")
+
+        flat = _convert_keys(attributes if isinstance(attributes, dict) else {})
+        if "id" in data:
+            flat["id"] = _coerce_resource_id(data["id"])
+        return flat
+
+    if strict:
+        raise EventyayParsingError("Strict JSON:API mode requires 'data.attributes' in resource responses.")
+    return _convert_keys(data)
+
+
+def _parse_jsonapi_list_item(item: Any, strict: bool) -> Any:
+    """Parse one list item according to JSON:API semantics."""
+    if isinstance(item, dict) and "attributes" in item:
+        attributes = item["attributes"]
+        if strict and not isinstance(attributes, dict):
+            raise EventyayParsingError(
+                "Expected JSON:API resource 'attributes' to be an object in list response."
+            )
+
+        flat = _convert_keys(attributes if isinstance(attributes, dict) else {})
+        if "id" in item:
+            flat["id"] = _coerce_resource_id(item["id"])
+        return flat
+
+    if strict:
+        raise EventyayParsingError(
+            "Strict JSON:API mode requires each list item to include 'attributes'."
+        )
+    return _convert_keys(item) if isinstance(item, dict) else item
+
+
+def _coerce_resource_id(value: Any) -> Any:
+    """Coerce JSON:API IDs to int when possible while preserving original values on failure."""
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return value
 
 
 def _convert_keys(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -175,7 +237,7 @@ def _convert_keys(data: Dict[str, Any]) -> Dict[str, Any]:
     if not isinstance(data, dict):
         return data
 
-    result = {}
+    result: Dict[str, Any] = {}
     for key, value in data.items():
         snake_key = dasherized_to_snake(key)
         if isinstance(value, dict):
@@ -273,3 +335,35 @@ def clean_dict(data: Dict[str, Any]) -> Dict[str, Any]:
     Useful for cleaning up query parameters and request payloads.
     """
     return {k: v for k, v in data.items() if v is not None}
+
+
+def validate_endpoint_path(endpoint: str) -> str:
+    """Validate and normalize API endpoint paths to reduce injection/smuggling risks."""
+    if not isinstance(endpoint, str):
+        raise EventyayValidationError("Endpoint path must be a string.", status_code=None)
+
+    normalized = endpoint.strip()
+    if not normalized:
+        raise EventyayValidationError("Endpoint path cannot be empty.", status_code=None)
+
+    if "://" in normalized or normalized.startswith("//"):
+        raise EventyayValidationError(
+            "Endpoint path must be relative and must not contain a URL scheme.",
+            status_code=None,
+        )
+
+    if "\\" in normalized:
+        raise EventyayValidationError(
+            "Endpoint path must not contain backslashes.",
+            status_code=None,
+        )
+
+    for char in normalized:
+        codepoint = ord(char)
+        if codepoint < 32 or codepoint == 127 or char in BIDI_CONTROL_CHARS:
+            raise EventyayValidationError(
+                "Endpoint path contains disallowed control characters.",
+                status_code=None,
+            )
+
+    return normalized.lstrip("/")

@@ -83,3 +83,7 @@ class EventyayTimeoutError(EventyayAPIError):
 
 class EventyayRateLimitError(EventyayAPIError):
     """Raised when the API rate limit is exceeded (HTTP 429)."""
+
+
+class EventyayParsingError(EventyayAPIError):
+    """Raised when a response cannot be parsed according to expected payload shape."""

@@ -7,25 +7,39 @@ automatic retries with exponential backoff and proper error mapping.
 """
 
 import asyncio
-from typing import Any, Dict, Optional
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
+from typing import Any, Dict, NoReturn, Optional, cast
 
 import aiohttp
 
 from .async_mixins import (
+    AsyncAccessCodesMixin,
+    AsyncAuthMixin,
     AsyncAttendeesMixin,
     AsyncDiscountCodesMixin,
     AsyncEventsMixin,
+    AsyncEventSubTopicsMixin,
+    AsyncEventTopicsMixin,
+    AsyncEventTypesMixin,
     AsyncFeedbacksMixin,
     AsyncMicrolocationsMixin,
+    AsyncMiscResourcesMixin,
+    AsyncNotificationsMixin,
+    AsyncOperationsMixin,
     AsyncOrdersMixin,
     AsyncOrganizersMixin,
+    AsyncPagesMixin,
+    AsyncRoleInvitesMixin,
     AsyncRolesMixin,
     AsyncSessionsMixin,
+    AsyncServicesMixin,
     AsyncSettingsMixin,
     AsyncSpeakersMixin,
     AsyncSponsorsMixin,
     AsyncTaxMixin,
     AsyncTicketsMixin,
+    AsyncTicketTagsMixin,
     AsyncTracksMixin,
     AsyncUsersMixin,
 )
@@ -38,12 +52,18 @@ from .exceptions import (
     EventyayTimeoutError,
     EventyayValidationError,
 )
+from .utils import validate_endpoint_path
 
 
 class AsyncEventyayClient(
+    AsyncAuthMixin,
     AsyncOrganizersMixin,
     AsyncEventsMixin,
+    AsyncEventTypesMixin,
+    AsyncEventTopicsMixin,
+    AsyncEventSubTopicsMixin,
     AsyncTicketsMixin,
+    AsyncTicketTagsMixin,
     AsyncAttendeesMixin,
     AsyncSpeakersMixin,
     AsyncSessionsMixin,
@@ -51,12 +71,19 @@ class AsyncEventyayClient(
     AsyncMicrolocationsMixin,
     AsyncSponsorsMixin,
     AsyncDiscountCodesMixin,
+    AsyncAccessCodesMixin,
+    AsyncNotificationsMixin,
+    AsyncPagesMixin,
+    AsyncServicesMixin,
     AsyncOrdersMixin,
     AsyncTaxMixin,
     AsyncUsersMixin,
     AsyncRolesMixin,
+    AsyncRoleInvitesMixin,
     AsyncFeedbacksMixin,
     AsyncSettingsMixin,
+    AsyncMiscResourcesMixin,
+    AsyncOperationsMixin,
 ):
     """
     Asynchronous client for the Eventyay API.
@@ -80,10 +107,11 @@ class AsyncEventyayClient(
 
     def __init__(
         self,
-        base_url: str = "https://dev.eventyay.com/api/v1",
+        base_url: str = "https://api.eventyay.com/v1",
         api_key: Optional[str] = None,
         timeout: int = 30,
         max_retries: int = 3,
+        strict_jsonapi: bool = False,
     ):
         """
         Initializes the AsyncEventyayClient.
@@ -93,11 +121,14 @@ class AsyncEventyayClient(
             api_key: Your API key. If omitted, only public endpoints work.
             timeout: Request timeout in seconds. Defaults to 30.
             max_retries: Maximum retry attempts. Defaults to 3.
+            strict_jsonapi: Enforce strict JSON:API wrapper shape in parser
+                utilities. Defaults to False.
         """
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.timeout = timeout
         self.max_retries = max_retries
+        self.strict_jsonapi = strict_jsonapi
         self.headers: Dict[str, str] = {
             "Content-Type": "application/vnd.api+json",
             "Accept": "application/vnd.api+json",
@@ -131,7 +162,9 @@ class AsyncEventyayClient(
             )
             self._session_loop = running_loop
 
-        return self._session
+        session = self._session
+        assert session is not None
+        return session
 
     async def __aenter__(self):
         await self._ensure_session()
@@ -159,15 +192,27 @@ class AsyncEventyayClient(
 
     async def _get(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Async GET request with automatic retries for rate limits."""
-        return await self._request("GET", endpoint, params=params)
+        return cast(Dict[str, Any], await self._request("GET", endpoint, params=params))
 
-    async def _post(self, endpoint: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def _post(
+        self,
+        endpoint: str,
+        json: Optional[Dict[str, Any]] = None,
+        idempotency_key: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Async POST request."""
-        return await self._request("POST", endpoint, json=json)
+        headers = {"Idempotency-Key": idempotency_key} if idempotency_key else None
+        return cast(Dict[str, Any], await self._request("POST", endpoint, json=json, headers=headers))
 
-    async def _patch(self, endpoint: str, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def _patch(
+        self,
+        endpoint: str,
+        json: Optional[Dict[str, Any]] = None,
+        idempotency_key: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Async PATCH request."""
-        return await self._request("PATCH", endpoint, json=json)
+        headers = {"Idempotency-Key": idempotency_key} if idempotency_key else None
+        return cast(Dict[str, Any], await self._request("PATCH", endpoint, json=json, headers=headers))
 
     async def _delete(self, endpoint: str) -> None:
         """Async DELETE request."""
@@ -179,77 +224,140 @@ class AsyncEventyayClient(
         endpoint: str,
         params: Optional[Dict[str, Any]] = None,
         json: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
     ) -> Any:
         """Internal helper for async requests with retry logic and error mapping."""
+        safe_endpoint = validate_endpoint_path(endpoint)
         session = await self._ensure_session()
 
-        url = f"{self.base_url}/{endpoint.lstrip('/')}"
+        url = f"{self.base_url}/{safe_endpoint}"
         backoff = 1
+        is_safe_method = method.upper() in {"GET", "HEAD", "OPTIONS"}
 
         for attempt in range(self.max_retries + 1):
             try:
-                async with session.request(method, url, params=params, json=json) as response:
-                    # Retry on rate limit
-                    if response.status == 429 and attempt < self.max_retries:
-                        wait_time = backoff * (2**attempt)
+                async with session.request(
+                    method,
+                    url,
+                    params=params,
+                    json=json,
+                    headers=headers,
+                ) as response:
+                    should_retry, wait_time, result = await self._process_response(
+                        method=method,
+                        response=response,
+                        attempt=attempt,
+                        backoff=backoff,
+                        is_safe_method=is_safe_method,
+                    )
+                    if should_retry:
                         await asyncio.sleep(wait_time)
                         continue
-
-                    # Retry on server errors
-                    if response.status in (500, 502, 503, 504) and attempt < self.max_retries:
-                        wait_time = backoff * (2**attempt)
-                        await asyncio.sleep(wait_time)
-                        continue
-
-                    # Successful DELETE returns no content
-                    if method == "DELETE" and response.status == 204:
-                        return None
-
-                    # Handle error responses
-                    if response.status >= 400:
-                        await self._handle_error(response)
-
-                    # Successful response for DELETE (non-204)
-                    if method == "DELETE":
-                        return None
-
-                    return await self._safe_json(response)
+                    return result
 
             except (EventyayAPIError,):
                 raise
             except asyncio.TimeoutError:
-                if attempt == self.max_retries:
+                if not self._should_retry_exception(attempt, is_safe_method):
                     raise EventyayTimeoutError(
                         f"Async request timed out after {self.timeout}s.",
                         status_code=None,
                     )
                 await asyncio.sleep(backoff * (2**attempt))
             except aiohttp.ClientError as e:
-                if attempt == self.max_retries:
+                if not self._should_retry_exception(attempt, is_safe_method):
                     raise EventyayConnectionError(
                         f"Async {method} request failed: {e}",
                         status_code=None,
                     )
                 await asyncio.sleep(backoff * (2**attempt))
 
+    async def _process_response(
+        self,
+        method: str,
+        response: aiohttp.ClientResponse,
+        attempt: int,
+        backoff: int,
+        is_safe_method: bool,
+    ) -> tuple[bool, float, Any]:
+        """Process a response and decide whether to retry or return a parsed result."""
+        if self._should_retry_response(response.status, attempt, is_safe_method):
+            wait_time = self._get_retry_delay(response, attempt, backoff)
+            return True, wait_time, None
+
+        # Successful DELETE returns no content.
+        if method == "DELETE" and response.status == 204:
+            return False, 0.0, None
+
+        if response.status >= 400:
+            await self._handle_error(response)
+
+        # Successful response for DELETE (non-204)
+        if method == "DELETE":
+            return False, 0.0, None
+
+        return False, 0.0, await self._safe_json(response)
+
+    def _should_retry_response(self, status_code: int, attempt: int, is_safe_method: bool) -> bool:
+        """Return True when status-based retry policy should trigger."""
+        if attempt >= self.max_retries or not is_safe_method:
+            return False
+        return status_code == 429 or status_code in (500, 502, 503, 504)
+
+    def _should_retry_exception(self, attempt: int, is_safe_method: bool) -> bool:
+        """Return True when exception-based retry policy should trigger."""
+        return is_safe_method and attempt < self.max_retries
+
+    def _get_retry_delay(
+        self,
+        response: aiohttp.ClientResponse,
+        attempt: int,
+        backoff: int,
+    ) -> float:
+        """Honor Retry-After when present, otherwise use exponential backoff."""
+        default_delay = float(backoff * (2**attempt))
+        retry_after = response.headers.get("Retry-After")
+        if not retry_after:
+            return default_delay
+
+        try:
+            return max(float(retry_after), 0.0)
+        except ValueError:
+            try:
+                retry_dt = parsedate_to_datetime(retry_after)
+                if retry_dt.tzinfo is None:
+                    retry_dt = retry_dt.replace(tzinfo=timezone.utc)
+                return max((retry_dt - datetime.now(timezone.utc)).total_seconds(), 0.0)
+            except Exception:
+                return default_delay
+
     async def _safe_json(self, response: aiohttp.ClientResponse) -> Dict[str, Any]:
         """Parse successful response JSON and raise a typed SDK error on malformed bodies."""
         try:
-            return await response.json(content_type=None)
+            data = await response.json(content_type=None)
+            if not isinstance(data, dict):
+                raise EventyayAPIError(
+                    "Server returned a non-object JSON payload in a successful response.",
+                    status_code=response.status,
+                )
+            return cast(Dict[str, Any], data)
         except Exception as e:
             raise EventyayAPIError(
                 "Server returned malformed JSON in a successful response.",
                 status_code=response.status,
             ) from e
 
-    async def _handle_error(self, response: aiohttp.ClientResponse) -> None:
+    async def _handle_error(self, response: aiohttp.ClientResponse) -> NoReturn:
         """Map async HTTP error responses to SDK-specific exceptions."""
         status_code = response.status
         response_body = await response.text()
 
         try:
-            error_data = await response.json()
-            error_message = error_data.get("detail") or error_data.get("message") or str(error_data)
+            error_data = await response.json(content_type=None)
+            if isinstance(error_data, dict):
+                error_message = error_data.get("detail") or error_data.get("message") or str(error_data)
+            else:
+                error_message = str(error_data)
         except Exception:
             error_message = response_body or f"HTTP {status_code} error"
 
