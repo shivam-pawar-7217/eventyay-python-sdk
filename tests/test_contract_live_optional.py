@@ -15,10 +15,28 @@ from eventyay import EventyayClient
 RUN_LIVE = os.getenv("EVENTYAY_LIVE_TEST") == "1"
 
 
+def _env_or_default(name: str, default: str) -> str:
+    """Return a trimmed env var value, falling back when empty/unset."""
+    value = os.getenv(name)
+    if value is None:
+        return default
+    value = value.strip()
+    return value or default
+
+
+def _optional_env(name: str) -> str | None:
+    """Return a trimmed env var or None when empty/unset."""
+    value = os.getenv(name)
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
+
+
 @pytest.mark.skipif(not RUN_LIVE, reason="Set EVENTYAY_LIVE_TEST=1 to run live contract checks")
 def test_live_public_events_contract_shape():
-    base_url = os.getenv("EVENTYAY_LIVE_BASE_URL", "https://api.eventyay.com/v1")
-    api_key = os.getenv("EVENTYAY_LIVE_API_KEY")
+    base_url = _env_or_default("EVENTYAY_LIVE_BASE_URL", "https://api.eventyay.com/v1")
+    api_key = _optional_env("EVENTYAY_LIVE_API_KEY")
 
     client = EventyayClient(
         base_url=base_url,
@@ -49,8 +67,8 @@ def test_live_public_events_contract_shape():
     ],
 )
 def test_live_misc_public_methods_contract_shape(method_name: str):
-    base_url = os.getenv("EVENTYAY_LIVE_BASE_URL", "https://api.eventyay.com/v1")
-    api_key = os.getenv("EVENTYAY_LIVE_API_KEY")
+    base_url = _env_or_default("EVENTYAY_LIVE_BASE_URL", "https://api.eventyay.com/v1")
+    api_key = _optional_env("EVENTYAY_LIVE_API_KEY")
 
     client = EventyayClient(
         base_url=base_url,
