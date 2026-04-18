@@ -6,6 +6,7 @@ These tests are skipped by default and can be enabled in CI or local runs with:
 """
 
 import os
+from typing import Optional
 
 import pytest
 
@@ -24,7 +25,7 @@ def _env_or_default(name: str, default: str) -> str:
     return value or default
 
 
-def _optional_env(name: str) -> str | None:
+def _optional_env(name: str) -> Optional[str]:
     """Return a trimmed env var or None when empty/unset."""
     value = os.getenv(name)
     if value is None:
